@@ -101,7 +101,10 @@ async function startServer() {
         'http://localhost:3001',
         'http://localhost:3002',
         'http://localhost:3003',
-        process.env.FRONTEND_URL
+        process.env.FRONTEND_URL,
+        /\.netlify\.app$/,  // Allow all netlify domains
+        /\.vercel\.app$/,   // Allow all vercel domains
+        'https://netlify.app'
       ].filter(Boolean),
       credentials: true,
       methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
