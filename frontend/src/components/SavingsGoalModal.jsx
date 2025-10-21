@@ -20,14 +20,12 @@ export default function SavingsGoalModal({ onClose, onGoalCreated, currentBalanc
   const { refreshData } = useDataSync()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
-  // Set current balance as default current amount when modal opens
+  // Always set current amount to 0 since we'll use live balance for display
   useEffect(() => {
-    if (currentBalance > 0) {
-      setFormData(prev => ({
-        ...prev,
-        currentAmount: currentBalance.toString()
-      }))
-    }
+    setFormData(prev => ({
+      ...prev,
+      currentAmount: '0'
+    }))
   }, [currentBalance])
 
   const handleSubmit = async (e) => {
@@ -66,7 +64,7 @@ export default function SavingsGoalModal({ onClose, onGoalCreated, currentBalanc
       // Refresh all data including alerts
       await refreshData(['all'])
       
-      setFormData({ title: '', description: '', targetAmount: '', deadline: '' })
+      setFormData({ title: '', description: '', targetAmount: '', currentAmount: '', deadline: '' })
       onClose()
     } catch (err) {
       setError(err.message)
