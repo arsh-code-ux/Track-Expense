@@ -100,6 +100,23 @@ export default function Dashboard() {
           console.error('Alerts response is not an array:', alertsData)
           setAlerts([])
         }
+      } else {
+        // Fetch demo alerts for non-authenticated users
+        console.log('=== FETCHING DEMO ALERTS ===')
+        try {
+          const demoAlertsResponse = await fetch(`${API_BASE}/api/alerts/demo`)
+          if (demoAlertsResponse.ok) {
+            const demoAlertsData = await demoAlertsResponse.json()
+            console.log('Demo alerts received:', demoAlertsData)
+            if (Array.isArray(demoAlertsData)) {
+              setAlerts(demoAlertsData)
+              console.log('Set demo alerts state with', demoAlertsData.length, 'alerts')
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching demo alerts:', error)
+          setAlerts([])
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error)

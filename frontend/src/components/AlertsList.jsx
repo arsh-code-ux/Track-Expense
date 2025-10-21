@@ -130,7 +130,7 @@ export default function AlertsList({ alerts, onAlertsUpdated }) {
   const markAsRead = async (alertId) => {
     try {
       await fetch(`${API_BASE}/api/alerts/${alertId}/read`, {
-        method: 'PATCH',
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${getToken()}`,
           'Content-Type': 'application/json'
