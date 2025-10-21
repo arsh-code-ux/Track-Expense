@@ -16,10 +16,10 @@ export default function AlertsList({ alerts, onAlertsUpdated }) {
   useEffect(() => {
     if (syncTrigger > 0) {
       console.log('🔔 Alerts refreshing due to data sync...')
-      refreshData(['alerts'])
+      // Only call onAlertsUpdated, don't call refreshData to avoid circular dependency
       onAlertsUpdated && onAlertsUpdated()
     }
-  }, [syncTrigger, refreshData, onAlertsUpdated])
+  }, [syncTrigger]) // Remove functions from dependencies to prevent infinite loops
 
   const getAlertIcon = (type) => {
     switch (type) {
