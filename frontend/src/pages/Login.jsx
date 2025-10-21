@@ -19,8 +19,8 @@ export default function Login(){
   // Redirect if already authenticated
   React.useEffect(() => {
     if (isAuthenticated && !authLoading) {
-      console.log('🔄 User already authenticated, redirecting to dashboard')
-      navigate('/dashboard')
+      console.log('User authenticated, redirecting to dashboard')
+      navigate('/dashboard', { replace: true })
     }
   }, [isAuthenticated, authLoading, navigate])
 
@@ -53,27 +53,17 @@ export default function Login(){
     
     try {
       if (isLogin) {
-        console.log('🔐 Attempting login...')
         const result = await login(formData.email, formData.password)
-        console.log('✅ Login result:', result)
+        console.log('✅ Login successful, redirecting to dashboard')
       } else {
-        console.log('📝 Attempting registration...')
         const result = await register(formData.name, formData.email, formData.password)
-        console.log('✅ Registration result:', result)
+        console.log('✅ Registration successful, redirecting to dashboard')
       }
       
-      console.log('✅ Authentication successful, navigating to dashboard')
-      
-      // PERMANENT FIX: Force hard navigation to dashboard
-      setSuccess('Login successful! Redirecting...')
-      
-      setTimeout(() => {
-        console.log('🔄 Forcing navigation to dashboard')
-        window.location.href = '/dashboard'  // Force page reload to dashboard
-      }, 1500)
+      // Navigation will happen through useEffect when isAuthenticated becomes true
       
     } catch (err) {
-      console.error('❌ Authentication failed:', err)
+      console.error('Authentication failed:', err)
       const errorMessage = err.message || 'Authentication failed'
       setError(errorMessage)
     }
