@@ -2,13 +2,16 @@ import React from 'react'
 import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
 
-export default function SavingsGoalCard({ goal, onSavingsUpdated }) {
+export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance = 0 }) {
   const { formatAmount } = useCurrency()
   const { getToken } = useAuth()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
-  const progressPercentage = goal.targetAmount > 0 ? (goal.currentAmount / goal.targetAmount) * 100 : 0
-  const remaining = goal.targetAmount - goal.currentAmount
-  const isCompleted = goal.currentAmount >= goal.targetAmount
+  
+  // Use actual current balance instead of stored currentAmount
+  const actualCurrentAmount = Math.max(0, currentBalance) // Don't show negative as savings
+  const progressPercentage = goal.targetAmount > 0 ? (actualCurrentAmount / goal.targetAmount) * 100 : 0
+  const remaining = goal.targetAmount - actualCurrentAmount
+  const isCompleted = actualCurrentAmount >= goal.targetAmount
   
   const getProgressColor = () => {
     if (isCompleted) return 'bg-green-500'
@@ -105,7 +108,7 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated }) {
         
         <div className="flex justify-between text-xs sm:text-sm">
           <span className="text-gray-600 dark:text-gray-400">Current Amount</span>
-          <span className="font-medium text-green-600 dark:text-green-400 break-all text-right">{formatAmount(goal.currentAmount)}</span>
+          <span className="font-medium text-green-600 dark:text-green-400 break-all text-right">{formatAmount(actualCurrentAmount)}</span>
         </div>
         
         <div className="flex justify-between text-xs sm:text-sm">

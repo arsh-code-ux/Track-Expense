@@ -1,7 +1,7 @@
 import React from 'react'
 import SavingsGoalCard from './SavingsGoalCard'
 
-export default function SavingsGoals({ savings, onSavingsUpdated }) {
+export default function SavingsGoals({ savings, onSavingsUpdated, currentBalance = 0 }) {
   if (!savings || savings.length === 0) {
     return (
       <div className="text-center py-12">
@@ -18,6 +18,7 @@ export default function SavingsGoals({ savings, onSavingsUpdated }) {
           key={goal._id}
           goal={goal}
           onSavingsUpdated={onSavingsUpdated}
+          currentBalance={currentBalance}
         />
       ))}
     </div>
