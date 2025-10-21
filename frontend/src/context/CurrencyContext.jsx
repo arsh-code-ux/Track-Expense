@@ -52,7 +52,7 @@ export const CurrencyProvider = ({ children }) => {
         
         const token = localStorage.getItem('token')
         if (token) {
-          const response = await fetch('http://localhost:3005/api/preferences', {
+          const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/preferences`, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Content-Type': 'application/json'
@@ -90,7 +90,7 @@ export const CurrencyProvider = ({ children }) => {
         
         const token = localStorage.getItem('token')
         if (token) {
-          await fetch('http://localhost:3005/api/preferences', {
+          await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/preferences`, {
             method: 'PUT',
             headers: {
               'Authorization': `Bearer ${token}`,

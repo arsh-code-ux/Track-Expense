@@ -150,10 +150,10 @@ export default function Dashboard() {
 
       // Fetch all data in parallel
       const [transactionsRes, budgetsRes, savingsRes, alertsRes] = await Promise.all([
-        fetch('http://localhost:3005/api/transactions', { headers }).catch(() => null),
-        fetch('http://localhost:3005/api/budgets', { headers }).catch(() => null),
-        fetch('http://localhost:3005/api/savings-goals', { headers }).catch(() => null),
-        fetch('http://localhost:3005/api/alerts', { headers }).catch(() => null)
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/transactions`, { headers }).catch(() => null),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/budgets`, { headers }).catch(() => null),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/savings-goals`, { headers }).catch(() => null),
+        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/alerts`, { headers }).catch(() => null)
       ])
 
       // Process responses

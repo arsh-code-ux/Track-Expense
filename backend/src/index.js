@@ -103,6 +103,7 @@ async function startServer() {
         'http://localhost:3003',
         'https://jade-zabaione-6618eb.netlify.app',  // Your Netlify URL
         'https://animated-tulumba-6ec4e6.netlify.app',  // Previous Netlify URL
+        'https://peppy-sprite-12003f.netlify.app',  // Current Netlify URL
         process.env.FRONTEND_URL,
         /\.netlify\.app$/,  // Allow all netlify domains
         /\.vercel\.app$/,   // Allow all vercel domains

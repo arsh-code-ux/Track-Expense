@@ -27,7 +27,7 @@ export default function Login(){
   const testConnection = async () => {
     try {
       console.log('🔍 Testing backend connection...')
-      const response = await fetch('http://localhost:3005/api/auth/test')
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/auth/test`)
       if (response.ok) {
         const data = await response.json()
         console.log('✅ Backend connection successful:', data)
