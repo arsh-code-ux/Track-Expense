@@ -1,9 +1,9 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
 import { useDataSync } from '../contexts/DataSyncContext'
 
-export default function SavingsGoalModal({ onClose, onGoalCreated }) {
+export default function SavingsGoalModal({ onClose, onGoalCreated, currentBalance = 0 }) {
   const { getToken } = useAuth()
   const [formData, setFormData] = useState({
     title: '',
@@ -19,6 +19,16 @@ export default function SavingsGoalModal({ onClose, onGoalCreated }) {
   const { isAuthenticated } = useAuth()
   const { refreshData } = useDataSync()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
+
+  // Set current balance as default current amount when modal opens
+  useEffect(() => {
+    if (currentBalance > 0) {
+      setFormData(prev => ({
+        ...prev,
+        currentAmount: currentBalance.toString()
+      }))
+    }
+  }, [currentBalance])
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -128,7 +138,7 @@ export default function SavingsGoalModal({ onClose, onGoalCreated }) {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Current Amount
+              Current Amount {currentBalance > 0 && <span className="text-xs text-gray-500">(Pre-filled with your current balance)</span>}
             </label>
             <input
               type="number"

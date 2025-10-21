@@ -100,23 +100,27 @@ export default function Dashboard() {
           console.error('Alerts response is not an array:', alertsData)
           setAlerts([])
         }
-      } else {
-        // Fetch demo alerts for non-authenticated users
-        console.log('=== FETCHING DEMO ALERTS ===')
-        try {
-          const demoAlertsResponse = await fetch(`${API_BASE}/api/alerts/demo`)
-          if (demoAlertsResponse.ok) {
-            const demoAlertsData = await demoAlertsResponse.json()
-            console.log('Demo alerts received:', demoAlertsData)
-            if (Array.isArray(demoAlertsData)) {
-              setAlerts(demoAlertsData)
-              console.log('Set demo alerts state with', demoAlertsData.length, 'alerts')
-            }
+      }
+
+      // Always try to fetch demo alerts regardless of authentication state
+      console.log('=== FETCHING DEMO ALERTS ===')
+      try {
+        const demoAlertsResponse = await fetch(`${API_BASE}/api/alerts/demo`)
+        console.log('Demo alerts response status:', demoAlertsResponse.status)
+        if (demoAlertsResponse.ok) {
+          const demoAlertsData = await demoAlertsResponse.json()
+          console.log('Demo alerts received:', demoAlertsData)
+          console.log('Demo alerts length:', demoAlertsData.length)
+          if (Array.isArray(demoAlertsData)) {
+            setAlerts(demoAlertsData)
+            console.log('✅ Set demo alerts state with', demoAlertsData.length, 'alerts')
           }
-        } catch (error) {
-          console.error('Error fetching demo alerts:', error)
-          setAlerts([])
+        } else {
+          console.error('Demo alerts fetch failed:', demoAlertsResponse.status)
         }
+      } catch (error) {
+        console.error('Error fetching demo alerts:', error)
+        setAlerts([])
       }
     } catch (error) {
       console.error('Error fetching data:', error)
@@ -403,6 +407,7 @@ export default function Dashboard() {
         <SavingsGoalModal 
           onClose={() => setShowSavingsModal(false)}
           onGoalCreated={fetchData}
+          currentBalance={balance}
         />
       )}
     </div>
