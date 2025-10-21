@@ -3,35 +3,53 @@ const Budget = require('../models/Budget');
 const SavingsGoal = require('../models/SavingsGoal');
 const Transaction = require('../models/Transaction');
 
-// Generate alerts for budget thresholds and goal achievements
-const generateAlerts = async (userId, transaction = null) => {
+// Main function to generate all types of alerts
+const generateAlerts = async (userId) => {
   try {
-    // Clear old alerts that may no longer be relevant
+    console.log('� Starting alert generation for user:', userId);
+    
+    // Clear outdated alerts first
     await clearOutdatedAlerts(userId);
-
-    // Check budget alerts if transaction is an expense
-    if (transaction && transaction.type === 'expense') {
-      await checkBudgetAlerts(userId, transaction);
-    }
-
+    
+    // Analyze user spending patterns (new feature)
+    await analyzeUserSpendingPatterns(userId);
+    
+    // Check all budget alerts comprehensively
+    await checkAllBudgetAlerts(userId);
+    
     // Check savings goal alerts
     await checkSavingsGoalAlerts(userId);
-
-    // Check financial health alerts
-    await checkFinancialHealthAlerts(userId);
-
+    
     // Check balance alerts
     await checkBalanceAlerts(userId);
-
+    
     // Check savings rate alerts
     await checkSavingsRateAlerts(userId);
-
+    
+    // Check financial health alerts
+    await checkFinancialHealthAlerts(userId);
+    
+    console.log('✅ Alert generation completed for user:', userId);
   } catch (error) {
     console.error('Error generating alerts:', error);
   }
 };
 
-// Check if any budgets are exceeded or approaching limits
+// Check all budgets for the user (comprehensive check)
+const checkAllBudgetAlerts = async (userId) => {
+  try {
+    const budgets = await Budget.find({ userId, isActive: true });
+    console.log(`💰 Checking ${budgets.length} active budgets for user`);
+
+    for (const budget of budgets) {
+      await checkSingleBudget(userId, budget);
+    }
+  } catch (error) {
+    console.error('Error checking all budget alerts:', error);
+  }
+};
+
+// Check if any budgets are exceeded or approaching limits (legacy function for single transaction)
 const checkBudgetAlerts = async (userId, transaction) => {
   try {
     // Find active budgets for the transaction category
@@ -42,53 +60,64 @@ const checkBudgetAlerts = async (userId, transaction) => {
     });
 
     for (const budget of budgets) {
-      // Calculate spending for this budget period
-      const startDate = getBudgetPeriodStart(budget.period, budget.startDate);
-      const endDate = new Date();
-
-      const totalSpent = await Transaction.aggregate([
-        {
-          $match: {
-            userId,
-            category: budget.category,
-            type: 'expense',
-            date: { $gte: startDate, $lte: endDate }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            total: { $sum: '$amount' }
-          }
-        }
-      ]);
-
-      const spentAmount = totalSpent[0]?.total || 0;
-      const percentageSpent = (spentAmount / budget.amount) * 100;
-
-      // Check if budget is exceeded
-      if (spentAmount > budget.amount) {
-        await createAlert(userId, {
-          type: 'budget_exceeded',
-          title: 'Budget Exceeded',
-          message: `Budget exceeded! You've spent $${spentAmount.toFixed(2)} of your $${budget.amount.toFixed(2)} ${budget.category} budget.`,
-          relatedId: budget._id,
-          severity: 'high'
-        });
-      }
-      // Check if approaching budget limit (80%)
-      else if (percentageSpent >= budget.alertThreshold && percentageSpent < 100) {
-        await createAlert(userId, {
-          type: 'budget_warning',
-          title: 'Budget Warning',
-          message: `Budget warning: You've used ${percentageSpent.toFixed(0)}% of your ${budget.category} budget ($${spentAmount.toFixed(2)} of $${budget.amount.toFixed(2)}).`,
-          relatedId: budget._id,
-          severity: 'medium'
-        });
-      }
+      await checkSingleBudget(userId, budget);
     }
   } catch (error) {
     console.error('Error checking budget alerts:', error);
+  }
+};
+
+// Check a single budget for alerts
+const checkSingleBudget = async (userId, budget) => {
+  try {
+    // Calculate spending for this budget period
+    const startDate = getBudgetPeriodStart(budget.period, budget.startDate);
+    const endDate = new Date();
+
+    const totalSpent = await Transaction.aggregate([
+      {
+        $match: {
+          userId,
+          category: budget.category,
+          type: 'expense',
+          date: { $gte: startDate, $lte: endDate }
+        }
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: '$amount' }
+        }
+      }
+    ]);
+
+    const spentAmount = totalSpent[0]?.total || 0;
+    const percentageSpent = (spentAmount / budget.amount) * 100;
+    
+    console.log(`💰 Budget Alert Check - ${budget.category}: Spent $${spentAmount.toFixed(2)} of $${budget.amount.toFixed(2)} (${percentageSpent.toFixed(1)}%)`);
+
+    // Check if budget is exceeded
+    if (spentAmount > budget.amount) {
+      await createAlert(userId, {
+        type: 'budget_exceeded',
+        title: 'Budget Exceeded',
+        message: `Budget exceeded! You've spent $${spentAmount.toFixed(2)} of your $${budget.amount.toFixed(2)} ${budget.category} budget.`,
+        relatedId: budget._id,
+        severity: 'high'
+      });
+    }
+    // Check if approaching budget limit (using alert threshold)
+    else if (percentageSpent >= budget.alertThreshold && percentageSpent < 100) {
+      await createAlert(userId, {
+        type: 'budget_warning',
+        title: 'Budget Warning',
+        message: `Budget warning: You've used ${percentageSpent.toFixed(0)}% of your ${budget.category} budget ($${spentAmount.toFixed(2)} of $${budget.amount.toFixed(2)}).`,
+        relatedId: budget._id,
+        severity: 'medium'
+      });
+    }
+  } catch (error) {
+    console.error('Error checking single budget:', error);
   }
 };
 
@@ -146,12 +175,12 @@ const checkSavingsGoalAlerts = async (userId) => {
 // Create a new alert
 const createAlert = async (userId, alertData) => {
   try {
-    // Check if similar alert already exists recently (within last hour)
+    // Check for duplicate alerts (prevent spam) - reduced to 30 minutes for more responsive alerts
     const recentAlert = await Alert.findOne({
       userId,
       type: alertData.type,
       relatedId: alertData.relatedId,
-      createdAt: { $gte: new Date(Date.now() - 60 * 60 * 1000) }
+      createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) }
     });
 
     if (!recentAlert) {
@@ -160,6 +189,9 @@ const createAlert = async (userId, alertData) => {
         ...alertData
       });
       await alert.save();
+      console.log(`🔔 Created new alert: ${alertData.type} - ${alertData.title}`);
+    } else {
+      console.log(`⏭️ Skipped duplicate alert: ${alertData.type}`);
     }
   } catch (error) {
     console.error('Error creating alert:', error);
@@ -356,6 +388,10 @@ const checkFinancialHealthAlerts = async (userId) => {
 const clearOutdatedAlerts = async (userId) => {
   try {
     console.log('🧹 Clearing outdated alerts for user:', userId);
+    
+    // Count alerts before clearing
+    const alertsBefore = await Alert.countDocuments({ userId });
+    console.log(`📊 Alerts before clearing: ${alertsBefore}`);
 
     // Get current financial state
     const currentMonth = new Date();
@@ -414,10 +450,107 @@ const clearOutdatedAlerts = async (userId) => {
       isRead: false
     });
 
+    // Count alerts after clearing
+    const alertsAfter = await Alert.countDocuments({ userId });
+    console.log(`📊 Alerts after clearing: ${alertsAfter}`);
+    console.log(`🗑️ Deleted ${alertsBefore - alertsAfter} outdated alerts`);
+    
     console.log('✅ Outdated alerts cleared successfully');
 
   } catch (error) {
     console.error('Error clearing outdated alerts:', error);
+  }
+};
+
+// Analyze user spending patterns and generate personalized alerts
+const analyzeUserSpendingPatterns = async (userId) => {
+  try {
+    console.log('📊 Analyzing user spending patterns...');
+    
+    // Get last 30 days of transactions
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    
+    const recentTransactions = await Transaction.find({
+      userId,
+      date: { $gte: thirtyDaysAgo }
+    });
+
+    console.log(`📈 Found ${recentTransactions.length} transactions in last 30 days`);
+
+    if (recentTransactions.length === 0) {
+      await createAlert(userId, {
+        type: 'no_activity',
+        title: 'No Recent Activity',
+        message: `📅 You haven't recorded any transactions in the past 30 days. Start tracking your expenses to get personalized insights!`,
+        severity: 'low'
+      });
+      return;
+    }
+
+    // Calculate totals
+    const totalIncome = recentTransactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const totalExpenses = recentTransactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const currentBalance = totalIncome - totalExpenses;
+
+    console.log(`💰 Last 30 days: Income $${totalIncome}, Expenses $${totalExpenses}, Balance $${currentBalance}`);
+
+    // Generate alerts based on spending patterns
+    if (totalExpenses > totalIncome && totalIncome > 0) {
+      await createAlert(userId, {
+        type: 'spending_more_than_income',
+        title: 'Spending Exceeds Income',
+        message: `⚠️ In the last 30 days, you spent $${totalExpenses.toFixed(2)} but earned $${totalIncome.toFixed(2)}. Consider reducing expenses or increasing income.`,
+        severity: 'high'
+      });
+    }
+
+    // Check for categories with high spending
+    const expensesByCategory = {};
+    recentTransactions
+      .filter(t => t.type === 'expense')
+      .forEach(t => {
+        expensesByCategory[t.category] = (expensesByCategory[t.category] || 0) + t.amount;
+      });
+
+    const sortedCategories = Object.entries(expensesByCategory)
+      .sort((a, b) => b[1] - a[1]);
+
+    if (sortedCategories.length > 0) {
+      const topCategory = sortedCategories[0];
+      const topCategoryPercentage = (topCategory[1] / totalExpenses) * 100;
+      
+      if (topCategoryPercentage > 40) {
+        await createAlert(userId, {
+          type: 'high_category_spending',
+          title: 'High Category Spending',
+          message: `📊 ${topCategoryPercentage.toFixed(0)}% of your expenses ($${topCategory[1].toFixed(2)}) are in ${topCategory[0]}. Consider reviewing this category.`,
+          severity: 'medium'
+        });
+      }
+    }
+
+    // Alert for positive financial performance
+    if (totalIncome > 0 && currentBalance > 0) {
+      const savingsRate = (currentBalance / totalIncome) * 100;
+      if (savingsRate > 20) {
+        await createAlert(userId, {
+          type: 'good_savings_rate',
+          title: 'Great Savings Rate!',
+          message: `🎉 You saved ${savingsRate.toFixed(0)}% of your income ($${currentBalance.toFixed(2)}) this month. Keep up the great work!`,
+          severity: 'low'
+        });
+      }
+    }
+
+  } catch (error) {
+    console.error('Error analyzing spending patterns:', error);
   }
 };
 
@@ -429,5 +562,6 @@ module.exports = {
   checkSavingsRateAlerts,
   checkFinancialHealthAlerts,
   createAlert,
-  clearOutdatedAlerts
+  clearOutdatedAlerts,
+  analyzeUserSpendingPatterns
 };
