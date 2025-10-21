@@ -6,7 +6,7 @@ import { useDataSync } from '../contexts/DataSyncContext'
 export default function TransactionList({ transactions, onTransactionUpdated, showLimited = false }){
   const { isAuthenticated, getToken } = useAuth()
   const { formatAmount } = useCurrency()
-  const { transactionOperations } = useDataSync()
+  const { transactionOperations, refreshData } = useDataSync()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
   const del = async (id)=>{
@@ -25,6 +25,9 @@ export default function TransactionList({ transactions, onTransactionUpdated, sh
         if (!response.ok) {
           throw new Error('Failed to delete transaction')
         }
+        
+        // Refresh all data including alerts for demo mode
+        await refreshData(['all'])
       }
 
       onTransactionUpdated && onTransactionUpdated()

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
+import { useDataSync } from '../contexts/DataSyncContext'
 
 export default function BudgetModal({ onClose, onBudgetCreated }) {
   const { getToken } = useAuth()
@@ -14,6 +15,7 @@ export default function BudgetModal({ onClose, onBudgetCreated }) {
 
   const { formatAmount } = useCurrency()
   const { isAuthenticated } = useAuth()
+  const { refreshData } = useDataSync()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
   const categories = ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Bills', 'Healthcare', 'Education', 'Travel', 'Other']
@@ -48,6 +50,10 @@ export default function BudgetModal({ onClose, onBudgetCreated }) {
 
       const newBudget = await response.json()
       onBudgetCreated(newBudget)
+      
+      // Refresh all data including alerts
+      await refreshData(['all'])
+      
       setFormData({ category: 'Food', amount: '', period: 'monthly' })
       onClose()
     } catch (err) {

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
+import { useDataSync } from '../contexts/DataSyncContext'
 
 export default function SavingsGoalModal({ onClose, onGoalCreated }) {
   const { getToken } = useAuth()
@@ -16,6 +17,7 @@ export default function SavingsGoalModal({ onClose, onGoalCreated }) {
 
   const { formatAmount } = useCurrency()
   const { isAuthenticated } = useAuth()
+  const { refreshData } = useDataSync()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
   const handleSubmit = async (e) => {
@@ -50,6 +52,10 @@ export default function SavingsGoalModal({ onClose, onGoalCreated }) {
 
       const newGoal = await response.json()
       onGoalCreated(newGoal)
+      
+      // Refresh all data including alerts
+      await refreshData(['all'])
+      
       setFormData({ title: '', description: '', targetAmount: '', currentAmount: '', deadline: '' })
       onClose()
     } catch (err) {

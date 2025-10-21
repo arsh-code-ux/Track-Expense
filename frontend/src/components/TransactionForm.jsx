@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCurrency } from '../context/CurrencyContext'
+import { useDataSync } from '../contexts/DataSyncContext'
 
 export default function TransactionForm({ onTransactionAdded }){
   const [type, setType] = useState('expense')
@@ -10,6 +11,7 @@ export default function TransactionForm({ onTransactionAdded }){
   const [loading, setLoading] = useState(false)
   const { isAuthenticated, getToken } = useAuth()
   const { currency } = useCurrency()
+  const { refreshData } = useDataSync()
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
@@ -70,6 +72,9 @@ export default function TransactionForm({ onTransactionAdded }){
       console.log('✅ Transaction added successfully:', newTransaction)
       
       onTransactionAdded && onTransactionAdded(newTransaction)
+      
+      // Refresh all data including alerts, budgets, and savings goals
+      await refreshData(['all'])
       
       // Reset form
       setAmount('')

@@ -387,19 +387,7 @@ export default function Dashboard() {
             </div>
           </div>
           
-          {isAuthenticated ? (
-            <AlertsList alerts={alerts} onAlertsUpdated={fetchData} />
-          ) : (
-            <div className="text-center py-8 sm:py-12">
-              <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm sm:text-base">Please login to access alerts.</p>
-              <button 
-                onClick={() => window.location.href = '/login'}
-                className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg text-sm sm:text-base transition-colors"
-              >
-                Go to Login
-              </button>
-            </div>
-          )}
+          <AlertsList alerts={alerts} onAlertsUpdated={fetchData} />
         </div>
       )}
 
