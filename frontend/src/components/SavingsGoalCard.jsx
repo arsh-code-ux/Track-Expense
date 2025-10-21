@@ -7,10 +7,12 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
   const { getToken } = useAuth()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
   
-  // Use actual current balance instead of stored currentAmount
-  const actualCurrentAmount = Math.max(0, currentBalance) // Don't show negative as savings
+  // User sets initial current amount when creating goal
+  // After that, we track their live account balance for progress
+  const actualCurrentAmount = Math.max(0, currentBalance) 
+  
   const progressPercentage = goal.targetAmount > 0 ? (actualCurrentAmount / goal.targetAmount) * 100 : 0
-  const remaining = goal.targetAmount - actualCurrentAmount
+  const remaining = Math.max(0, goal.targetAmount - actualCurrentAmount)
   const isCompleted = actualCurrentAmount >= goal.targetAmount
   
   const getProgressColor = () => {
