@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Alerts Debug Test</title>
+</head>
+<body>
+    <h1>Alerts API Test</h1>
+    <div id="status">Loading...</div>
+    <div id="results"></div>
+    
+    <script>
+        async function testAlerts() {
+            const statusDiv = document.getElementById('status');
+            const resultsDiv = document.getElementById('results');
+            
+            try {
+                // First test login
+                statusDiv.innerHTML = 'Testing login...';
+                const loginResponse = await fetch('http://localhost:3005/api/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: 'muskan@test.com',
+                        password: 'test123'
+                    })
+                });
+                
+                if (!loginResponse.ok) {
+                    statusDiv.innerHTML = 'Login failed: ' + loginResponse.status;
+                    return;
+                }
+                
+                const loginData = await loginResponse.json();
+                statusDiv.innerHTML = 'Login successful, testing alerts...';
+                
+                // Test alerts
+                const alertsResponse = await fetch('http://localhost:3005/api/alerts', {
+                    headers: { 'Authorization': `Bearer ${loginData.token}` }
+                });
+                
+                if (!alertsResponse.ok) {
+                    statusDiv.innerHTML = 'Alerts fetch failed: ' + alertsResponse.status;
+                    return;
+                }
+                
+                const alertsData = await alertsResponse.json();
+                statusDiv.innerHTML = `Success! Found ${alertsData.length} alerts`;
+                
+                resultsDiv.innerHTML = `
+                    <h2>Alerts Data:</h2>
+                    <pre>${JSON.stringify(alertsData, null, 2)}</pre>
+                `;
+                
+            } catch (error) {
+                statusDiv.innerHTML = 'Error: ' + error.message;
+                resultsDiv.innerHTML = '<pre>' + error.stack + '</pre>';
+            }
+        }
+        
+        testAlerts();
+    </script>
+</body>
+</html>
