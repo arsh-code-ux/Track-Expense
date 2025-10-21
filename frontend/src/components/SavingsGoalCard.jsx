@@ -7,9 +7,8 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
   const { getToken } = useAuth()
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
   
-  // User sets initial current amount when creating goal
-  // After that, we track their live account balance for progress
-  const actualCurrentAmount = Math.max(0, currentBalance) 
+  // Show the amount user entered when creating goal
+  const actualCurrentAmount = Math.max(0, goal.currentAmount || 0) 
   
   const progressPercentage = goal.targetAmount > 0 ? (actualCurrentAmount / goal.targetAmount) * 100 : 0
   const remaining = Math.max(0, goal.targetAmount - actualCurrentAmount)
@@ -75,6 +74,48 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
     }
   }
 
+  const updateCurrentAmount = async () => {
+    const newAmount = prompt(
+      `Update current amount for "${goal.title}"\n\nCurrent: ${formatAmount(actualCurrentAmount)}\nYour account balance: ${formatAmount(currentBalance)}\n\nEnter new amount:`, 
+      actualCurrentAmount.toString()
+    )
+    
+    if (newAmount === null || newAmount === '') return
+    
+    const amount = parseFloat(newAmount)
+    if (isNaN(amount) || amount < 0) {
+      alert('Please enter a valid positive number')
+      return
+    }
+
+    try {
+      const headers = {
+        'Authorization': `Bearer ${getToken()}`,
+        'Content-Type': 'application/json'
+      }
+
+      const response = await fetch(`${API_BASE}/api/savings-goals/${goal._id}`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({
+          ...goal,
+          currentAmount: amount
+        })
+      })
+
+      if (response.ok) {
+        console.log('Savings goal updated successfully')
+        onSavingsUpdated && onSavingsUpdated() // Refresh savings goals list
+      } else {
+        console.error('Failed to update savings goal')
+        alert('Failed to update savings goal. Please try again.')
+      }
+    } catch (error) {
+      console.error('Error updating savings goal:', error)
+      alert('Error updating savings goal. Please try again.')
+    }
+  }
+
   return (
     <div className={`p-4 sm:p-6 rounded-xl border shadow-lg transition-colors ${getCardColor()}`}>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 space-y-2 sm:space-y-0">
@@ -90,6 +131,15 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
               ✓ Completed
             </span>
           )}
+          <button
+            onClick={() => updateCurrentAmount()}
+            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1"
+            title="Update Current Amount"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+            </svg>
+          </button>
           <button
             onClick={deleteSavingsGoal}
             className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1"

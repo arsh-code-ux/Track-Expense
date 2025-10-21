@@ -86,6 +86,41 @@ router.put('/:id/progress', auth, async (req, res) => {
   }
 });
 
+// Update savings goal
+router.put('/:id', auth, async (req, res) => {
+  try {
+    const userId = req.user ? req.user._id : demoUserId;
+    const updates = req.body;
+    
+    // Remove userId and _id from updates to prevent overwriting
+    delete updates.userId;
+    delete updates._id;
+    
+    const goal = await SavingsGoal.findOneAndUpdate(
+      { _id: req.params.id, userId },
+      updates,
+      { new: true }
+    );
+    
+    if (!goal) {
+      return res.status(404).json({ message: 'Goal not found' });
+    }
+    
+    // Check if goal is now completed
+    if (goal.currentAmount >= goal.targetAmount) {
+      goal.isCompleted = true;
+      await goal.save();
+    }
+    
+    // Regenerate alerts after savings goal update
+    await generateAlerts(userId);
+    
+    res.json(goal);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 // Delete savings goal
 router.delete('/:id', auth, async (req, res) => {
   try {
