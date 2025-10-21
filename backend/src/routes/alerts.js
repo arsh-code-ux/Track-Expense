@@ -80,4 +80,44 @@ router.post('/generate', auth, async (req, res) => {
   }
 });
 
+// Refresh alerts - clear outdated and regenerate
+router.post('/refresh', auth, async (req, res) => {
+  try {
+    const userId = req.user ? req.user._id : demoUserId;
+    
+    // Force regenerate all alerts
+    await generateAlerts(userId);
+    
+    // Get fresh alerts
+    const alerts = await Alert.find({ userId }).sort({ createdAt: -1 }).limit(50);
+    
+    res.json({ 
+      success: true, 
+      message: `Refreshed alerts successfully`, 
+      count: alerts.length,
+      alerts: alerts 
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Demo refresh endpoint
+router.post('/refresh/demo', async (req, res) => {
+  try {
+    await generateAlerts(demoUserId);
+    
+    const alerts = await Alert.find({ userId: demoUserId }).sort({ createdAt: -1 }).limit(20);
+    
+    res.json({ 
+      success: true, 
+      message: `Demo alerts refreshed successfully`, 
+      count: alerts.length,
+      alerts: alerts 
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

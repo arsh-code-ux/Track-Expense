@@ -6,6 +6,9 @@ const Transaction = require('../models/Transaction');
 // Generate alerts for budget thresholds and goal achievements
 const generateAlerts = async (userId, transaction = null) => {
   try {
+    // Clear old alerts that may no longer be relevant
+    await clearOutdatedAlerts(userId);
+
     // Check budget alerts if transaction is an expense
     if (transaction && transaction.type === 'expense') {
       await checkBudgetAlerts(userId, transaction);
@@ -349,6 +352,75 @@ const checkFinancialHealthAlerts = async (userId) => {
   }
 };
 
+// Clear outdated alerts that are no longer relevant
+const clearOutdatedAlerts = async (userId) => {
+  try {
+    console.log('🧹 Clearing outdated alerts for user:', userId);
+
+    // Get current financial state
+    const currentMonth = new Date();
+    currentMonth.setDate(1);
+    currentMonth.setHours(0, 0, 0, 0);
+
+    const transactions = await Transaction.find({
+      userId,
+      date: { $gte: currentMonth }
+    });
+
+    const totalIncome = transactions
+      .filter(t => t.type === 'income')
+      .reduce((sum, t) => sum + t.amount, 0);
+    
+    const totalExpenses = transactions
+      .filter(t => t.type === 'expense')
+      .reduce((sum, t) => sum + t.amount, 0);
+
+    const currentBalance = totalIncome - totalExpenses;
+
+    // Clear balance alerts that are no longer accurate
+    if (currentBalance >= 100) {
+      // Remove low balance alerts if balance is now healthy
+      await Alert.deleteMany({
+        userId,
+        type: { $in: ['low_balance', 'negative_balance'] },
+        isRead: false
+      });
+      console.log('✅ Cleared outdated balance alerts - balance is now healthy');
+    }
+
+    // Clear budget alerts older than current budget period
+    const budgets = await Budget.find({ userId, isActive: true });
+    for (const budget of budgets) {
+      const periodStart = getBudgetPeriodStart(budget.period, budget.startDate);
+      
+      // Remove budget alerts from previous periods
+      await Alert.deleteMany({
+        userId,
+        type: { $in: ['budget_exceeded', 'budget_warning'] },
+        relatedId: budget._id,
+        createdAt: { $lt: periodStart },
+        isRead: false
+      });
+    }
+
+    // Clear alerts older than 7 days (except high priority ones)
+    const weekAgo = new Date();
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    
+    await Alert.deleteMany({
+      userId,
+      severity: { $in: ['low', 'medium'] },
+      createdAt: { $lt: weekAgo },
+      isRead: false
+    });
+
+    console.log('✅ Outdated alerts cleared successfully');
+
+  } catch (error) {
+    console.error('Error clearing outdated alerts:', error);
+  }
+};
+
 module.exports = {
   generateAlerts,
   checkBudgetAlerts,
@@ -356,5 +428,6 @@ module.exports = {
   checkBalanceAlerts,
   checkSavingsRateAlerts,
   checkFinancialHealthAlerts,
-  createAlert
+  createAlert,
+  clearOutdatedAlerts
 };

@@ -142,6 +142,37 @@ export default function AlertsList({ alerts, onAlertsUpdated }) {
     }
   }
 
+  const refreshAlerts = async () => {
+    try {
+      console.log('🔄 Refreshing alerts...')
+      
+      const token = getToken()
+      const endpoint = token ? '/api/alerts/refresh' : '/api/alerts/refresh/demo'
+      
+      const headers = {
+        'Content-Type': 'application/json'
+      }
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      
+      const response = await fetch(`${API_BASE}${endpoint}`, {
+        method: 'POST',
+        headers
+      })
+
+      if (response.ok) {
+        console.log('✅ Alerts refreshed successfully')
+        onAlertsUpdated && onAlertsUpdated() // Refresh alerts list
+      } else {
+        console.error('Failed to refresh alerts')
+      }
+    } catch (error) {
+      console.error('Error refreshing alerts:', error)
+    }
+  }
+
   const unreadAlerts = alerts?.filter(alert => !alert.isRead) || []
   const readAlerts = alerts?.filter(alert => alert.isRead) || []
 
@@ -150,15 +181,36 @@ export default function AlertsList({ alerts, onAlertsUpdated }) {
       <div className="text-center py-8 sm:py-12">
         <div className="text-gray-400 dark:text-gray-500 text-4xl sm:text-6xl mb-4">🔕</div>
         <h3 className="text-base sm:text-lg font-medium text-gray-900 dark:text-white mb-2">No alerts yet</h3>
-        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-4">
           You'll see notifications here when budgets are exceeded, goals are achieved, or other important events occur.
         </p>
+        <button
+          onClick={refreshAlerts}
+          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <span className="mr-2">🔄</span>
+          Check for Alerts
+        </button>
       </div>
     )
   }
 
   return (
     <div className="space-y-4 sm:space-y-6">
+      {/* Refresh Button */}
+      <div className="flex justify-between items-center">
+        <div className="text-sm text-gray-600 dark:text-gray-400">
+          {alerts.length} total alerts ({unreadAlerts.length} unread)
+        </div>
+        <button
+          onClick={refreshAlerts}
+          className="inline-flex items-center px-3 py-1.5 text-sm bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        >
+          <span className="mr-1">🔄</span>
+          Refresh
+        </button>
+      </div>
+
       {/* Unread Alerts */}
       {unreadAlerts.length > 0 && (
         <div>
