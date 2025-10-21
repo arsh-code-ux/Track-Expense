@@ -16,6 +16,7 @@ export default function Dashboard() {
   const [savingsGoals, setSavingsGoals] = useState([])
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(true)
+  const [quickLoading, setQuickLoading] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [showBudgetModal, setShowBudgetModal] = useState(false)
   const [showSavingsModal, setShowSavingsModal] = useState(false)
@@ -24,108 +25,152 @@ export default function Dashboard() {
 
   const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
+  // Load cached data immediately for faster initial render
   useEffect(() => {
+    const cachedData = localStorage.getItem('dashboard_cache')
+    if (cachedData) {
+      try {
+        const { transactions: cachedTx, alerts: cachedAlerts } = JSON.parse(cachedData)
+        if (cachedTx) setTransactions(cachedTx)
+        if (cachedAlerts) setAlerts(cachedAlerts)
+        console.log('📦 Loaded cached data for faster initial render')
+      } catch (e) {
+        console.log('Cache parse error, fetching fresh data')
+      }
+    }
     fetchData()
   }, [isAuthenticated])
 
   const fetchData = async () => {
     try {
-      setLoading(true)
-      console.log('=== FETCHDATA CALLED ===')
+      // Use quickLoading for subsequent calls, full loading for initial
+      if (transactions.length > 0) {
+        setQuickLoading(true)
+      } else {
+        setLoading(true)
+      }
+      console.log('=== FETCHDATA CALLED (Performance Optimized) ===')
       console.log('Is authenticated:', isAuthenticated)
       console.log('Token in localStorage:', localStorage.getItem('token') ? 'Present' : 'Missing')
       
-      // Fetch transactions
-      const transactionsUrl = isAuthenticated 
-        ? `${API_BASE}/api/transactions`
-        : `${API_BASE}/api/transactions/demo`
-      
-      const transactionsResponse = await fetch(transactionsUrl, {
-        headers: isAuthenticated ? {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        } : {}
-      })
-      const transactionsData = await transactionsResponse.json()
-      
-      if (Array.isArray(transactionsData)) {
-        setTransactions(transactionsData)
-      } else {
-        console.error('Transaction fetch error:', transactionsData)
-        setTransactions([])
-      }
+      const token = localStorage.getItem('token')
+      const headers = isAuthenticated ? { 'Authorization': `Bearer ${token}` } : {}
 
-      // Fetch budgets if authenticated
       if (isAuthenticated) {
-        const budgetsResponse = await fetch(`${API_BASE}/api/budgets`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-        const budgetsData = await budgetsResponse.json()
-        if (Array.isArray(budgetsData)) {
-          setBudgets(budgetsData)
-        }
+        // Make all API calls in parallel for authenticated users
+        console.log('🚀 Making parallel API calls for authenticated user...')
+        const [transactionsRes, budgetsRes, savingsRes, alertsRes] = await Promise.all([
+          fetch(`${API_BASE}/api/transactions`, { headers }),
+          fetch(`${API_BASE}/api/budgets`, { headers }),
+          fetch(`${API_BASE}/api/savings-goals`, { headers }),
+          fetch(`${API_BASE}/api/alerts`, { headers })
+        ])
 
-        // Fetch savings goals
-        const savingsResponse = await fetch(`${API_BASE}/api/savings-goals`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-        const savingsData = await savingsResponse.json()
-        if (Array.isArray(savingsData)) {
-          setSavingsGoals(savingsData)
-        }
-
-        // Fetch alerts
-        console.log('=== FETCHING ALERTS ===')
-        const alertsResponse = await fetch(`${API_BASE}/api/alerts`, {
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
-        })
-        
-        console.log('Alerts response status:', alertsResponse.status)
-        console.log('Alerts response ok:', alertsResponse.ok)
-        
-        if (!alertsResponse.ok) {
-          console.error('Alerts fetch failed:', alertsResponse.status, alertsResponse.statusText)
-          setAlerts([])
-          return
-        }
-        
-        const alertsData = await alertsResponse.json()
-        console.log('Alerts data received:', alertsData)
-        console.log('Alerts data type:', typeof alertsData)
-        console.log('Is alerts array?', Array.isArray(alertsData))
-        
-        if (Array.isArray(alertsData)) {
-          setAlerts(alertsData)
-          console.log('Set alerts state with', alertsData.length, 'alerts')
-        } else {
-          console.error('Alerts response is not an array:', alertsData)
-          setAlerts([])
-        }
-      }
-
-      // Always try to fetch demo alerts regardless of authentication state
-      console.log('=== FETCHING DEMO ALERTS ===')
-      try {
-        const demoAlertsResponse = await fetch(`${API_BASE}/api/alerts/demo`)
-        console.log('Demo alerts response status:', demoAlertsResponse.status)
-        if (demoAlertsResponse.ok) {
-          const demoAlertsData = await demoAlertsResponse.json()
-          console.log('Demo alerts received:', demoAlertsData)
-          console.log('Demo alerts length:', demoAlertsData.length)
-          if (Array.isArray(demoAlertsData)) {
-            setAlerts(demoAlertsData)
-            console.log('✅ Set demo alerts state with', demoAlertsData.length, 'alerts')
+        // Process transactions
+        if (transactionsRes.ok) {
+          const transactionsData = await transactionsRes.json()
+          if (Array.isArray(transactionsData)) {
+            setTransactions(transactionsData)
+          } else {
+            console.error('Transaction fetch error:', transactionsData)
+            setTransactions([])
           }
         } else {
-          console.error('Demo alerts fetch failed:', demoAlertsResponse.status)
+          console.error('Transactions fetch failed:', transactionsRes.status)
+          setTransactions([])
         }
-      } catch (error) {
-        console.error('Error fetching demo alerts:', error)
-        setAlerts([])
+
+        // Process budgets
+        if (budgetsRes.ok) {
+          const budgetsData = await budgetsRes.json()
+          if (Array.isArray(budgetsData)) {
+            setBudgets(budgetsData)
+          }
+        } else {
+          console.error('Budgets fetch failed:', budgetsRes.status)
+          setBudgets([])
+        }
+
+        // Process savings goals
+        if (savingsRes.ok) {
+          const savingsData = await savingsRes.json()
+          if (Array.isArray(savingsData)) {
+            setSavingsGoals(savingsData)
+          }
+        } else {
+          console.error('Savings goals fetch failed:', savingsRes.status)
+          setSavingsGoals([])
+        }
+
+        // Process alerts
+        if (alertsRes.ok) {
+          const alertsData = await alertsRes.json()
+          console.log('Alerts data received:', alertsData)
+          if (Array.isArray(alertsData)) {
+            setAlerts(alertsData)
+            console.log('Set alerts state with', alertsData.length, 'alerts')
+          } else {
+            console.error('Alerts response is not an array:', alertsData)
+            setAlerts([])
+          }
+        } else {
+          console.error('Alerts fetch failed:', alertsRes.status)
+          setAlerts([])
+        }
+
+      } else {
+        // For non-authenticated users, fetch demo data in parallel
+        console.log('🚀 Making parallel API calls for demo user...')
+        const [transactionsRes, alertsRes] = await Promise.all([
+          fetch(`${API_BASE}/api/transactions/demo`),
+          fetch(`${API_BASE}/api/alerts/demo`)
+        ])
+
+        // Process demo transactions
+        if (transactionsRes.ok) {
+          const transactionsData = await transactionsRes.json()
+          if (Array.isArray(transactionsData)) {
+            setTransactions(transactionsData)
+          } else {
+            console.error('Demo transaction fetch error:', transactionsData)
+            setTransactions([])
+          }
+        } else {
+          console.error('Demo transactions fetch failed:', transactionsRes.status)
+          setTransactions([])
+        }
+
+        // Process demo alerts
+        if (alertsRes.ok) {
+          const alertsData = await alertsRes.json()
+          console.log('Demo alerts received:', alertsData)
+          if (Array.isArray(alertsData)) {
+            setAlerts(alertsData)
+            console.log('✅ Set demo alerts state with', alertsData.length, 'alerts')
+          }
+        } else {
+          console.error('Demo alerts fetch failed:', alertsRes.status)
+          setAlerts([])
+        }
       }
     } catch (error) {
       console.error('Error fetching data:', error)
     } finally {
       setLoading(false)
+      setQuickLoading(false)
+      
+      // Cache data for faster next load
+      try {
+        const cacheData = {
+          transactions: transactions.slice(0, 50), // Cache only recent 50 transactions
+          alerts: alerts.slice(0, 20), // Cache only recent 20 alerts
+          timestamp: Date.now()
+        }
+        localStorage.setItem('dashboard_cache', JSON.stringify(cacheData))
+        console.log('💾 Cached data for faster next load')
+      } catch (e) {
+        console.log('Cache save error:', e)
+      }
     }
   }
 
@@ -163,10 +208,12 @@ export default function Dashboard() {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D']
 
-  if (loading) {
+  if (loading && transactions.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500"></div>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
+        <p className="text-gray-600 dark:text-gray-400">Loading your financial dashboard...</p>
+        <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">⚡ Optimized for fast loading</p>
       </div>
     )
   }
