@@ -3,6 +3,7 @@ import { useCurrency } from '../context/CurrencyContext'
 import { useTheme } from '../context/ThemeContext'
 import { useAuth } from '../context/AuthContext'
 import CurrencySelector from '../components/CurrencySelector'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 
 export default function Settings() {
   const { isDark, toggleTheme } = useTheme()
@@ -26,18 +27,34 @@ export default function Settings() {
     setExporting(true)
     try {
       const token = getToken()
-      const response = await fetch('http://localhost:3005/api/transactions', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
+      const API_BASE = getApiUrl()
+      
+      console.log('🔽 Exporting transactions from:', API_BASE)
+      
+      const response = await fetch(`${API_BASE}/api/transactions`, {
+        headers: getApiHeaders(token)
       })
 
       if (!response.ok) {
-        throw new Error('Failed to fetch transactions')
+        if (response.status === 401) {
+          throw new Error('Authentication failed. Please log in again.')
+        } else if (response.status === 404) {
+          throw new Error('Transactions endpoint not found. Please contact support.')
+        } else if (response.status >= 500) {
+          throw new Error('Server error. Please try again later.')
+        } else {
+          throw new Error(`Failed to fetch transactions (Status: ${response.status})`)
+        }
       }
 
       const transactions = await response.json()
+      
+      console.log(`✅ Fetched ${transactions.length} transactions for export`)
+
+      if (!Array.isArray(transactions) || transactions.length === 0) {
+        alert('No transactions found to export.')
+        return
+      }
       
       // Create CSV content
       const csvHeaders = ['Date', 'Type', 'Amount', 'Category', 'Description']
@@ -51,24 +68,25 @@ export default function Settings() {
       
       const csvContent = [
         csvHeaders.join(','),
-        ...csvRows.map(row => row.map(field => `"${field}"`).join(','))
+        ...csvRows.map(row => row.map(field => `"${String(field).replace(/"/g, '""')}"`).join(','))
       ].join('\n')
 
       // Create and download file
-      const blob = new Blob([csvContent], { type: 'text/csv' })
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
       const url = window.URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `expense-tracker-data-${new Date().toISOString().split('T')[0]}.csv`
+      a.download = `expense-tracker-transactions-${new Date().toISOString().split('T')[0]}.csv`
+      a.style.display = 'none'
       document.body.appendChild(a)
       a.click()
       document.body.removeChild(a)
       window.URL.revokeObjectURL(url)
 
-      alert('Transactions exported successfully!')
+      alert(`✅ Successfully exported ${transactions.length} transactions!`)
     } catch (error) {
-      console.error('Export error:', error)
-      alert('Failed to export transactions. Please try again.')
+      console.error('❌ Export error:', error)
+      alert(`❌ Export failed: ${error.message}`)
     } finally {
       setExporting(false)
     }
@@ -154,17 +172,17 @@ export default function Settings() {
 
         // Import transactions
         const token = getToken()
+        const API_BASE = getApiUrl()
         let imported = 0
         let failed = 0
 
+        console.log('🔼 Importing transactions to:', API_BASE)
+
         for (const transaction of transactions) {
           try {
-            const response = await fetch('http://localhost:3005/api/transactions', {
+            const response = await fetch(`${API_BASE}/api/transactions`, {
               method: 'POST',
-              headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'application/json'
-              },
+              headers: getApiHeaders(token),
               body: JSON.stringify(transaction)
             })
 
