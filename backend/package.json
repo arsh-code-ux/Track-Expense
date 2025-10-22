@@ -1,4 +1,5 @@
 {
+  "$schema": "https://json.schemastore.org/package.json",
   "name": "track-expense-backend",
   "version": "0.1.0",
   "main": "src/index.js",
