@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
 import { useDataSync } from '../contexts/DataSyncContext'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 
 export default function SavingsGoalModal({ onClose, onGoalCreated, currentBalance = 0 }) {
   const { getToken } = useAuth()
@@ -18,7 +19,6 @@ export default function SavingsGoalModal({ onClose, onGoalCreated, currentBalanc
   const { formatAmount } = useCurrency()
   const { isAuthenticated } = useAuth()
   const { refreshData } = useDataSync()
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
   // Pre-fill current amount with user's current balance
   useEffect(() => {
@@ -41,12 +41,14 @@ export default function SavingsGoalModal({ onClose, onGoalCreated, currentBalanc
     setError('')
 
     try {
+      const API_BASE = getApiUrl()
+      const token = getToken()
+
+      console.log('🎯 Creating savings goal at:', API_BASE)
+
       const response = await fetch(`${API_BASE}/api/savings-goals`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`
-        },
+        headers: getApiHeaders(token),
         body: JSON.stringify({
           title: formData.title,
           description: formData.description,

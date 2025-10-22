@@ -1,11 +1,11 @@
 import React from 'react'
 import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 
 export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance = 0 }) {
   const { formatAmount } = useCurrency()
   const { getToken } = useAuth()
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
   
   // Show the amount user entered when creating goal
   const actualCurrentAmount = Math.max(0, goal.currentAmount || 0) 
@@ -51,14 +51,14 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
     }
 
     try {
-      const headers = {
-        'Authorization': `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
-      }
+      const API_BASE = getApiUrl()
+      const token = getToken()
+
+      console.log('🗑️ Deleting savings goal from:', API_BASE)
 
       const response = await fetch(`${API_BASE}/api/savings-goals/${goal._id}`, {
         method: 'DELETE',
-        headers
+        headers: getApiHeaders(token)
       })
 
       if (response.ok) {
@@ -89,14 +89,14 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
     }
 
     try {
-      const headers = {
-        'Authorization': `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
-      }
+      const API_BASE = getApiUrl()
+      const token = getToken()
+
+      console.log('💰 Updating savings goal at:', API_BASE)
 
       const response = await fetch(`${API_BASE}/api/savings-goals/${goal._id}`, {
         method: 'PUT',
-        headers,
+        headers: getApiHeaders(token),
         body: JSON.stringify({
           ...goal,
           currentAmount: amount

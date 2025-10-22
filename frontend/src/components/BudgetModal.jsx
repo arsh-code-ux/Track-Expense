@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
-import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
+import { useCurrency } from '../context/CurrencyContext'
 import { useDataSync } from '../contexts/DataSyncContext'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 
 export default function BudgetModal({ onClose, onBudgetCreated }) {
   const { getToken } = useAuth()
   const [formData, setFormData] = useState({
-    category: 'Food',
+    category: '',
     amount: '',
     period: 'monthly'
   })
@@ -16,7 +17,6 @@ export default function BudgetModal({ onClose, onBudgetCreated }) {
   const { formatAmount } = useCurrency()
   const { isAuthenticated } = useAuth()
   const { refreshData } = useDataSync()
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
   const categories = ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Bills', 'Healthcare', 'Education', 'Travel', 'Other']
 
@@ -31,12 +31,14 @@ export default function BudgetModal({ onClose, onBudgetCreated }) {
     setError('')
 
     try {
+      const API_BASE = getApiUrl()
+      const token = getToken()
+
+      console.log('💰 Creating budget at:', API_BASE)
+
       const response = await fetch(`${API_BASE}/api/budgets`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${getToken()}`
-        },
+        headers: getApiHeaders(token),
         body: JSON.stringify({
           category: formData.category,
           amount: parseFloat(formData.amount),

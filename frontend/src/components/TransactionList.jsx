@@ -2,12 +2,12 @@ import React from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCurrency } from '../context/CurrencyContext'
 import { useDataSync } from '../contexts/DataSyncContext'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 
 export default function TransactionList({ transactions, onTransactionUpdated, showLimited = false }){
   const { isAuthenticated, getToken } = useAuth()
   const { formatAmount } = useCurrency()
   const { transactionOperations, refreshData } = useDataSync()
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
   const del = async (id)=>{
     try{
@@ -17,6 +17,7 @@ export default function TransactionList({ transactions, onTransactionUpdated, sh
         console.log('✅ Transaction deleted via sync context, all data refreshed')
       } else {
         // Fallback for demo mode
+        const API_BASE = getApiUrl()
         const url = `${API_BASE}/api/transactions/demo/${id}`
         const response = await fetch(url, {
           method: 'DELETE'

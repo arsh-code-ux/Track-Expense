@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useDataSync } from '../contexts/DataSyncContext'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 
 const TransactionForm = ({ onTransactionAdd, isDarkMode, onClose }) => {
   const { getToken, isAuthenticated } = useAuth()
@@ -15,8 +16,6 @@ const TransactionForm = ({ onTransactionAdd, isDarkMode, onClose }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
 
   const categories = {
     expense: ['Food', 'Transportation', 'Entertainment', 'Shopping', 'Bills', 'Healthcare', 'Other'],

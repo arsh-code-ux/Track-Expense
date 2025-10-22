@@ -1,11 +1,11 @@
 import React from 'react'
 import { useCurrency } from '../context/CurrencyContext'
 import { useAuth } from '../context/AuthContext'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 
 export default function BudgetCard({ budget, transactions, onBudgetUpdated }) {
   const { formatAmount } = useCurrency()
   const { getToken } = useAuth()
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
   
   // Calculate spent amount based on transactions in this budget's category and period
   const currentMonth = new Date().getMonth()
@@ -44,14 +44,14 @@ export default function BudgetCard({ budget, transactions, onBudgetUpdated }) {
     }
 
     try {
-      const headers = {
-        'Authorization': `Bearer ${getToken()}`,
-        'Content-Type': 'application/json'
-      }
+      const API_BASE = getApiUrl()
+      const token = getToken()
+
+      console.log('🗑️ Deleting budget at:', API_BASE)
 
       const response = await fetch(`${API_BASE}/api/budgets/${budget._id}`, {
         method: 'DELETE',
-        headers
+        headers: getApiHeaders(token)
       })
 
       if (response.ok) {
