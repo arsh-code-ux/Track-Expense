@@ -1,11 +1,13 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useDataSync } from '../contexts/DataSyncContext'
+import { getApiUrl, getApiHeaders, handleApiError } from '../utils/apiConfig'
 
 export default function AlertsList({ alerts, onAlertsUpdated }) {
   const { getToken } = useAuth()
   const { syncTrigger, refreshData } = useDataSync()
-  const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3005'
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const API_BASE = getApiUrl()
 
   console.log('=== ALERTSLIST RENDER ===')
   console.log('Alerts prop:', alerts)
@@ -143,33 +145,43 @@ export default function AlertsList({ alerts, onAlertsUpdated }) {
   }
 
   const refreshAlerts = async () => {
+    if (isRefreshing) return
+    
+    setIsRefreshing(true)
     try {
-      console.log('🔄 Refreshing alerts...')
+      console.log('🔄 Refreshing alerts from:', API_BASE)
       
       const token = getToken()
       const endpoint = token ? '/api/alerts/refresh' : '/api/alerts/refresh/demo'
       
-      const headers = {
-        'Content-Type': 'application/json'
-      }
-      
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000)
       
       const response = await fetch(`${API_BASE}${endpoint}`, {
         method: 'POST',
-        headers
+        headers: getApiHeaders(token),
+        signal: controller.signal
       })
+
+      clearTimeout(timeoutId)
 
       if (response.ok) {
         console.log('✅ Alerts refreshed successfully')
-        onAlertsUpdated && onAlertsUpdated() // Refresh alerts list
+        onAlertsUpdated && onAlertsUpdated()
       } else {
-        console.error('Failed to refresh alerts')
+        console.error(`Failed to refresh alerts: ${response.status}`)
+        if (response.status >= 500) {
+          alert('Server error. Please try again in a moment.')
+        } else if (response.status === 401) {
+          alert('Authentication expired. Please log in again.')
+        }
       }
     } catch (error) {
+      const errorMessage = handleApiError(error, 'Alert refresh')
       console.error('Error refreshing alerts:', error)
+      alert(errorMessage)
+    } finally {
+      setIsRefreshing(false)
     }
   }
 
@@ -186,10 +198,20 @@ export default function AlertsList({ alerts, onAlertsUpdated }) {
         </p>
         <button
           onClick={refreshAlerts}
-          className="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+          disabled={isRefreshing}
+          className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 disabled:cursor-not-allowed text-white text-sm rounded-lg transition-colors"
         >
-          <span className="mr-2">🔄</span>
-          Check for Alerts
+          {isRefreshing ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>
+              Checking...
+            </>
+          ) : (
+            <>
+              <span className="mr-2">🔄</span>
+              Check for Alerts
+            </>
+          )}
         </button>
       </div>
     )

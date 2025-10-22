@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useCurrency } from '../context/CurrencyContext'
 import { useDataSync } from '../contexts/DataSyncContext'
+import { getApiUrl, getApiHeaders } from '../utils/apiConfig'
 import TransactionFormNew from '../components/TransactionFormNew'
 import TransactionList from '../components/TransactionList'
 import BudgetManager from '../components/BudgetManager'
@@ -10,6 +11,7 @@ import AlertsPanel from '../components/AlertsPanel'
 import BudgetModal from '../components/BudgetModal'
 import SavingsGoalModal from '../components/SavingsGoalModal'
 import AnimatedCounter, { useIntersectionObserver } from '../components/AnimatedCounter'
+import NetworkErrorFallback from '../components/NetworkErrorFallback'
 
 // Import charts normally to fix loading issues
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts'
@@ -77,9 +79,13 @@ export default function Dashboard() {
   const [savings, setSavings] = useState([])
   const [alerts, setAlerts] = useState([])
   const [loading, setLoading] = useState(false) // Start with false for demo data
+  const [error, setError] = useState(null)
+  const [isRetrying, setIsRetrying] = useState(false)
   const [activeTab, setActiveTab] = useState('overview')
   const [showBudgetModal, setShowBudgetModal] = useState(false)
   const [showSavingsModal, setShowSavingsModal] = useState(false)
+  
+  const API_BASE = getApiUrl()
   
   // Refs for animated counters
   const statsRef = useRef(null)
@@ -114,6 +120,11 @@ export default function Dashboard() {
 
   const tabs = ['overview', 'transactions', 'budgets', 'savings', 'alerts']
 
+  const handleRetry = () => {
+    setIsRetrying(true)
+    fetchData()
+  }
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchData()
@@ -136,51 +147,80 @@ export default function Dashboard() {
 
     try {
       setLoading(true)
+      setError(null)
+      
       const token = getToken()
       
       if (!token) {
+        setError('Authentication token not found. Please log in again.')
         setLoading(false)
         return
       }
       
-      const headers = {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      }
+      console.log('📡 Fetching dashboard data from:', API_BASE)
+      
+      const headers = getApiHeaders(token)
+
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
 
       // Fetch all data in parallel
       const [transactionsRes, budgetsRes, savingsRes, alertsRes] = await Promise.all([
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/transactions`, { headers }).catch(() => null),
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/budgets`, { headers }).catch(() => null),
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/savings-goals`, { headers }).catch(() => null),
-        fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3005'}/api/alerts`, { headers }).catch(() => null)
+        fetch(`${API_BASE}/api/transactions`, { headers, signal: controller.signal }).catch(() => null),
+        fetch(`${API_BASE}/api/budgets`, { headers, signal: controller.signal }).catch(() => null),
+        fetch(`${API_BASE}/api/savings-goals`, { headers, signal: controller.signal }).catch(() => null),
+        fetch(`${API_BASE}/api/alerts`, { headers, signal: controller.signal }).catch(() => null)
       ])
+
+      clearTimeout(timeoutId)
+
+      // Check if at least one request succeeded
+      const hasAnySuccess = [transactionsRes, budgetsRes, savingsRes, alertsRes].some(res => res?.ok)
+      
+      if (!hasAnySuccess) {
+        throw new Error('Unable to connect to the server. Please check your internet connection.')
+      }
 
       // Process responses
       if (transactionsRes?.ok) {
         const data = await transactionsRes.json()
         setTransactions(data)
+        console.log(`✅ Loaded ${data.length} transactions`)
       }
       
       if (budgetsRes?.ok) {
         const data = await budgetsRes.json()
         setBudgets(data)
+        console.log(`✅ Loaded ${data.length} budgets`)
       }
       
       if (savingsRes?.ok) {
         const data = await savingsRes.json()
         setSavings(data)
+        console.log(`✅ Loaded ${data.length} savings goals`)
       }
       
       if (alertsRes?.ok) {
         const data = await alertsRes.json()
         setAlerts(Array.isArray(data) ? data : [])
+        console.log(`✅ Loaded ${Array.isArray(data) ? data.length : 0} alerts`)
+      } else {
+        // If alerts fail specifically, it's not critical - set empty array
+        setAlerts([])
       }
 
     } catch (error) {
       console.error('Error fetching data:', error)
+      if (error.name === 'AbortError') {
+        setError('Request timed out. The server may be slow to respond.')
+      } else if (error.message.includes('fetch') || error.message.includes('network')) {
+        setError('Unable to connect to the server. Please check your internet connection.')
+      } else {
+        setError(error.message || 'An unexpected error occurred while loading your data.')
+      }
     } finally {
       setLoading(false)
+      setIsRetrying(false)
     }
   }
 
@@ -216,12 +256,29 @@ export default function Dashboard() {
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D']
 
+  // Show error fallback if there's a critical error
+  if (error && !loading && isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-gray-900 dark:via-blue-900 dark:to-purple-900">
+        <div className="max-w-4xl mx-auto px-4 py-8">
+          <NetworkErrorFallback 
+            error={error} 
+            onRetry={handleRetry}
+            isRetrying={isRetrying}
+          />
+        </div>
+      </div>
+    )
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex justify-center items-center">
         <div className="text-center">
           <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto"></div>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">Loading...</p>
+          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+            {isRetrying ? 'Retrying connection...' : 'Loading your dashboard...'}
+          </p>
         </div>
       </div>
     )
