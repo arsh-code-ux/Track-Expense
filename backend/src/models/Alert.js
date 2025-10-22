@@ -18,7 +18,10 @@ const AlertSchema = new mongoose.Schema({
       'savings_goal', 
       'goal_achieved', 
       'goal_milestone', 
-      'recurring_due'
+      'recurring_due',
+      'no_activity',
+      'spending_more_than_income',
+      'good_savings_rate'
     ],
     required: true 
   },

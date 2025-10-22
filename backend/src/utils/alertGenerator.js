@@ -528,7 +528,7 @@ const analyzeUserSpendingPatterns = async (userId) => {
       
       if (topCategoryPercentage > 40) {
         await createAlert(userId, {
-          type: 'high_category_spending',
+          type: 'category_overspend',
           title: 'High Category Spending',
           message: `📊 ${topCategoryPercentage.toFixed(0)}% of your expenses ($${topCategory[1].toFixed(2)}) are in ${topCategory[0]}. Consider reviewing this category.`,
           severity: 'medium'
