@@ -28,7 +28,7 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
 
       try {
         const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // Increased to 30 seconds for production deployment
 
         const response = await fetch(`${API_BASE}/api/alerts/refresh`, {
           method: 'POST',
@@ -48,22 +48,28 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
           if (response.status === 401) {
             setError('Authentication failed. Please try logging in again.')
           } else if (response.status >= 500) {
-            setError('Server error. Please try again later.')
+            setError('Server error. The backend may be starting up. Please wait a moment and try again.')
+          } else if (response.status === 0) {
+            setError('Network connection error. Please check your internet connection.')
           } else {
-            setError(`Failed to generate alerts (${response.status})`)
+            setError(`Failed to generate alerts (Status: ${response.status}). Please try refreshing manually.`)
           }
         }
       } catch (error) {
         console.error('Error generating alerts:', error)
-        setError(handleApiError(error, 'Alert generation'))
+        if (error.name === 'AbortError') {
+          setError('Request timeout. The server may be slow to respond. Please try again.')
+        } else {
+          setError(handleApiError(error, 'Alert generation'))
+        }
       } finally {
         setIsGenerating(false)
         setHasTriedAutoGenerate(true)
       }
     }
 
-    // Only auto-generate after a short delay to prevent rapid calls
-    const timer = setTimeout(autoGenerateAlerts, 2000) // Increased delay for deployment
+    // Only auto-generate after a longer delay for deployment stability
+    const timer = setTimeout(autoGenerateAlerts, 3000) // Increased delay for production deployment
     return () => clearTimeout(timer)
   }, [alerts.length, getToken, onAlertsUpdated, isGenerating, hasTriedAutoGenerate, API_BASE])
 
@@ -78,9 +84,10 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
       console.log('🔄 AlertsPanel Debug: Manual refresh initiated')
       console.log('🌐 AlertsPanel Debug: Using API URL:', API_BASE)
       console.log('📊 AlertsPanel Debug: Current alerts count:', alerts.length)
+      console.log('🔑 AlertsPanel Debug: Token exists:', !!token)
       
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout for manual refresh
+      const timeoutId = setTimeout(() => controller.abort(), 45000) // Increased to 45 seconds for production
 
       const response = await fetch(`${API_BASE}/api/alerts/refresh`, {
         method: 'POST',
@@ -90,6 +97,8 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
 
       clearTimeout(timeoutId)
 
+      console.log('📡 AlertsPanel Debug: Response received, status:', response.status)
+
       if (response.ok) {
         console.log('✅ Alerts refreshed successfully')
         setError(null)
@@ -97,17 +106,35 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
         onAlertsUpdated && onAlertsUpdated()
       } else {
         console.log('❌ Manual refresh failed, status:', response.status)
+        let errorMessage
+        
         if (response.status === 401) {
-          setError('Authentication expired. Please log in again.')
+          errorMessage = 'Authentication expired. Please log in again.'
+        } else if (response.status === 404) {
+          errorMessage = 'Alerts endpoint not found. Please contact support.'
         } else if (response.status >= 500) {
-          setError('Server error. The backend may be starting up. Please wait a moment and try again.')
+          errorMessage = 'Server error. The backend may be starting up. Please wait a moment and try again.'
+        } else if (response.status === 0) {
+          errorMessage = 'Network connection failed. Please check your internet connection.'
         } else {
-          setError(`Failed to refresh alerts (Status: ${response.status})`)
+          errorMessage = `Failed to refresh alerts (Status: ${response.status}). Please try again later.`
         }
+        
+        setError(errorMessage)
       }
     } catch (error) {
       console.error('Error refreshing alerts:', error)
-      setError(handleApiError(error, 'Alert refresh'))
+      let errorMessage
+      
+      if (error.name === 'AbortError') {
+        errorMessage = 'Request timeout. The server may be slow to respond. Please try again.'
+      } else if (error.message.includes('fetch') || error.message.includes('network')) {
+        errorMessage = 'Network connection error. Please check your internet connection and try again.'
+      } else {
+        errorMessage = handleApiError(error, 'Alert refresh')
+      }
+      
+      setError(errorMessage)
     } finally {
       setIsGenerating(false)
     }
@@ -170,12 +197,28 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
                   We're analyzing your transactions, budgets, and savings goals to create personalized financial insights...
                 </p>
                 <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                  This may take a few moments on first load
+                  {import.meta.env.PROD ? 'This may take longer on first deployment' : 'This may take a few moments on first load'}
                 </div>
               </div>
             </div>
           ) : (
             <AlertsList alerts={alerts} onAlertsUpdated={onAlertsUpdated} />
+          )}
+
+          {/* Network Status Indicator for Production */}
+          {import.meta.env.PROD && error && (
+            <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+              <div className="flex items-start">
+                <div className="text-blue-500 dark:text-blue-400 mr-2 mt-0.5">ℹ️</div>
+                <div className="text-sm">
+                  <p className="text-blue-800 dark:text-blue-300 font-medium">Deployment Tip</p>
+                  <p className="text-blue-600 dark:text-blue-400 mt-1">
+                    If alerts aren't loading, the backend may still be starting up after deployment. 
+                    Wait a minute and try refreshing manually.
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
 
         </div>

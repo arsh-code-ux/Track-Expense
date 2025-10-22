@@ -51,11 +51,17 @@ export const handleApiError = (error, context = 'API request') => {
   console.error(`Error in ${context}:`, error)
   
   if (error.name === 'AbortError') {
-    return 'Request timeout. Please check your internet connection.'
-  } else if (error.message.includes('fetch') || error.message.includes('network')) {
-    return 'Network error. Please check your connection and try again.'
+    return import.meta.env.PROD 
+      ? 'Request timeout. The server may be starting up after deployment. Please wait a moment and try again.'
+      : 'Request timeout. Please check your internet connection.'
+  } else if (error.message.includes('fetch') || error.message.includes('network') || error.message.includes('Failed to fetch')) {
+    return import.meta.env.PROD
+      ? 'Network error. If just deployed, the backend may be starting up. Please wait a moment and try again.'
+      : 'Network error. Please check your connection and try again.'
+  } else if (error.message.includes('CORS')) {
+    return 'Cross-origin request blocked. Please contact support if this persists.'
   } else {
-    return `${context} failed. Please try again.`
+    return `${context} failed. ${import.meta.env.PROD ? 'Please wait and try again.' : 'Please try again.'}`
   }
 }
 

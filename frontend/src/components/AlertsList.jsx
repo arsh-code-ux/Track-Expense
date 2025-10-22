@@ -10,13 +10,18 @@ export default function AlertsList({ alerts, onAlertsUpdated }) {
   console.log('Alerts prop:', alerts)
   console.log('Alerts length:', alerts?.length || 'undefined')
   console.log('Alerts type:', typeof alerts)
+  console.log('Environment:', import.meta.env.MODE)
 
   // Refresh alerts when sync trigger fires
   useEffect(() => {
     if (syncTrigger > 0) {
       console.log('🔔 Alerts refreshing due to data sync...')
       // Only call onAlertsUpdated, don't call refreshData to avoid circular dependency
-      onAlertsUpdated && onAlertsUpdated()
+      try {
+        onAlertsUpdated && onAlertsUpdated()
+      } catch (error) {
+        console.error('Error during alert sync refresh:', error)
+      }
     }
   }, [syncTrigger]) // Remove functions from dependencies to prevent infinite loops
 
