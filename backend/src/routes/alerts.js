@@ -12,14 +12,37 @@ router.get('/', auth, async (req, res) => {
   try {
     const userId = req.user._id;
     
-    const alerts = await Alert.find({ userId })
-      .sort({ createdAt: -1 })
-      .limit(50);
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        error: 'User ID is required' 
+      });
+    }
+    
+    console.log('📋 Fetching alerts for user:', userId);
+    
+    let alerts = [];
+    try {
+      alerts = await Alert.find({ userId })
+        .sort({ createdAt: -1 })
+        .limit(50);
+      
+      console.log(`✅ Found ${alerts.length} alerts for user`);
+    } catch (dbError) {
+      console.error('Database error fetching alerts:', dbError);
+      return res.status(500).json({ 
+        success: false, 
+        error: 'Database connection error. Please try again.' 
+      });
+    }
     
     res.json(alerts);
   } catch (error) {
-    console.error('Error fetching alerts:', error);
-    res.status(500).json({ error: 'Failed to fetch alerts' });
+    console.error('❌ Critical error fetching alerts:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: 'Failed to fetch alerts. Please try again later.' 
+    });
   }
 });
 
@@ -85,11 +108,40 @@ router.post('/refresh', auth, async (req, res) => {
   try {
     const userId = req.user ? req.user._id : demoUserId;
     
-    // Force regenerate all alerts
-    await generateAlerts(userId);
+    if (!userId) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'User ID is required for alert refresh' 
+      });
+    }
     
-    // Get fresh alerts
-    const alerts = await Alert.find({ userId }).sort({ createdAt: -1 }).limit(50);
+    console.log('🔄 Starting alert refresh for user:', userId);
+    
+    // Force regenerate all alerts with timeout protection
+    const alertGenerationPromise = generateAlerts(userId);
+    const timeoutPromise = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('Alert generation timeout')), 30000);
+    });
+    
+    try {
+      await Promise.race([alertGenerationPromise, timeoutPromise]);
+      console.log('✅ Alert generation completed successfully');
+    } catch (generationError) {
+      console.error('⚠️ Alert generation error (continuing with existing alerts):', generationError);
+      // Continue to return existing alerts even if generation fails
+    }
+    
+    // Get fresh alerts with error handling
+    let alerts = [];
+    try {
+      alerts = await Alert.find({ userId }).sort({ createdAt: -1 }).limit(50);
+    } catch (fetchError) {
+      console.error('Error fetching alerts after refresh:', fetchError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to fetch alerts after refresh' 
+      });
+    }
     
     res.json({ 
       success: true, 
@@ -98,7 +150,11 @@ router.post('/refresh', auth, async (req, res) => {
       alerts: alerts 
     });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error('❌ Critical error in alert refresh:', err);
+    res.status(500).json({ 
+      success: false, 
+      message: err.message || 'Failed to refresh alerts' 
+    });
   }
 });
 

@@ -8,30 +8,51 @@ const generateAlerts = async (userId) => {
   try {
     console.log('� Starting alert generation for user:', userId);
     
+    // Validate userId
+    if (!userId) {
+      console.error('❌ No userId provided for alert generation');
+      return;
+    }
+    
     // Clear outdated alerts first
-    await clearOutdatedAlerts(userId);
+    await clearOutdatedAlerts(userId).catch(error => {
+      console.error('Error clearing outdated alerts:', error);
+    });
     
     // Analyze user spending patterns (new feature)
-    await analyzeUserSpendingPatterns(userId);
+    await analyzeUserSpendingPatterns(userId).catch(error => {
+      console.error('Error analyzing spending patterns:', error);
+    });
     
     // Check all budget alerts comprehensively
-    await checkAllBudgetAlerts(userId);
+    await checkAllBudgetAlerts(userId).catch(error => {
+      console.error('Error checking budget alerts:', error);
+    });
     
     // Check savings goal alerts
-    await checkSavingsGoalAlerts(userId);
+    await checkSavingsGoalAlerts(userId).catch(error => {
+      console.error('Error checking savings goal alerts:', error);
+    });
     
     // Check balance alerts
-    await checkBalanceAlerts(userId);
+    await checkBalanceAlerts(userId).catch(error => {
+      console.error('Error checking balance alerts:', error);
+    });
     
     // Check savings rate alerts
-    await checkSavingsRateAlerts(userId);
+    await checkSavingsRateAlerts(userId).catch(error => {
+      console.error('Error checking savings rate alerts:', error);
+    });
     
     // Check financial health alerts
-    await checkFinancialHealthAlerts(userId);
+    await checkFinancialHealthAlerts(userId).catch(error => {
+      console.error('Error checking financial health alerts:', error);
+    });
     
     console.log('✅ Alert generation completed for user:', userId);
   } catch (error) {
-    console.error('Error generating alerts:', error);
+    console.error('❌ Critical error in alert generation:', error);
+    // Don't throw error to prevent crashing the request
   }
 };
 
@@ -70,29 +91,50 @@ const checkBudgetAlerts = async (userId, transaction) => {
 // Check a single budget for alerts
 const checkSingleBudget = async (userId, budget) => {
   try {
+    // Validate inputs
+    if (!userId || !budget || !budget.category || !budget.amount) {
+      console.log('⚠️ Invalid budget data for alert check');
+      return;
+    }
+
     // Calculate spending for this budget period
     const startDate = getBudgetPeriodStart(budget.period, budget.startDate);
     const endDate = new Date();
 
-    const totalSpent = await Transaction.aggregate([
-      {
-        $match: {
-          userId,
-          category: budget.category,
-          type: 'expense',
-          date: { $gte: startDate, $lte: endDate }
+    // Use safer aggregation with error handling
+    let totalSpent;
+    try {
+      totalSpent = await Transaction.aggregate([
+        {
+          $match: {
+            userId,
+            category: budget.category,
+            type: 'expense',
+            date: { $gte: startDate, $lte: endDate }
+          }
+        },
+        {
+          $group: {
+            _id: null,
+            total: { $sum: '$amount' }
+          }
         }
-      },
-      {
-        $group: {
-          _id: null,
-          total: { $sum: '$amount' }
-        }
-      }
-    ]);
+      ]);
+    } catch (aggregationError) {
+      console.error('Error in budget aggregation:', aggregationError);
+      // Fallback to simple query
+      const transactions = await Transaction.find({
+        userId,
+        category: budget.category,
+        type: 'expense',
+        date: { $gte: startDate, $lte: endDate }
+      });
+      const fallbackTotal = transactions.reduce((sum, t) => sum + (t.amount || 0), 0);
+      totalSpent = [{ total: fallbackTotal }];
+    }
 
-    const spentAmount = totalSpent[0]?.total || 0;
-    const percentageSpent = (spentAmount / budget.amount) * 100;
+    const spentAmount = (totalSpent && totalSpent[0] && totalSpent[0].total) ? totalSpent[0].total : 0;
+    const percentageSpent = budget.amount > 0 ? (spentAmount / budget.amount) * 100 : 0;
     
     console.log(`💰 Budget Alert Check - ${budget.category}: Spent $${spentAmount.toFixed(2)} of $${budget.amount.toFixed(2)} (${percentageSpent.toFixed(1)}%)`);
 
@@ -175,44 +217,81 @@ const checkSavingsGoalAlerts = async (userId) => {
 // Create a new alert
 const createAlert = async (userId, alertData) => {
   try {
+    // Validate inputs
+    if (!userId || !alertData || !alertData.type || !alertData.message) {
+      console.log('⚠️ Invalid alert data provided');
+      return;
+    }
+
     // Check for duplicate alerts (prevent spam) - reduced to 30 minutes for more responsive alerts
-    const recentAlert = await Alert.findOne({
-      userId,
-      type: alertData.type,
-      relatedId: alertData.relatedId,
-      createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) }
-    });
+    let recentAlert;
+    try {
+      recentAlert = await Alert.findOne({
+        userId,
+        type: alertData.type,
+        relatedId: alertData.relatedId,
+        createdAt: { $gte: new Date(Date.now() - 30 * 60 * 1000) }
+      });
+    } catch (findError) {
+      console.error('Error checking for duplicate alerts:', findError);
+      // Continue with alert creation if duplicate check fails
+      recentAlert = null;
+    }
 
     if (!recentAlert) {
-      const alert = new Alert({
-        userId,
-        ...alertData
-      });
-      await alert.save();
-      console.log(`🔔 Created new alert: ${alertData.type} - ${alertData.title}`);
+      try {
+        const alert = new Alert({
+          userId,
+          type: alertData.type,
+          title: alertData.title || 'Alert',
+          message: alertData.message,
+          severity: alertData.severity || 'medium',
+          relatedId: alertData.relatedId || null,
+          isRead: false
+        });
+        await alert.save();
+        console.log(`🔔 Created new alert: ${alertData.type} - ${alertData.title}`);
+      } catch (saveError) {
+        console.error('Error saving alert to database:', saveError);
+        // Don't throw error to prevent crashing the alert generation
+      }
     } else {
       console.log(`⏭️ Skipped duplicate alert: ${alertData.type}`);
     }
   } catch (error) {
-    console.error('Error creating alert:', error);
+    console.error('❌ Critical error creating alert:', error);
+    // Don't throw error to prevent crashing the request
   }
 };
 
 // Calculate budget period start date
 const getBudgetPeriodStart = (period, startDate) => {
-  const now = new Date();
-  
-  if (period === 'weekly') {
-    const weekStart = new Date(now);
-    weekStart.setDate(now.getDate() - now.getDay());
-    weekStart.setHours(0, 0, 0, 0);
-    return weekStart;
-  } else if (period === 'monthly') {
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    return monthStart;
+  try {
+    const now = new Date();
+    
+    if (!period) {
+      return startDate ? new Date(startDate) : now;
+    }
+    
+    if (period === 'weekly') {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - now.getDay());
+      weekStart.setHours(0, 0, 0, 0);
+      return weekStart;
+    } else if (period === 'monthly') {
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      return monthStart;
+    } else if (period === 'yearly') {
+      const yearStart = new Date(now.getFullYear(), 0, 1);
+      return yearStart;
+    }
+    
+    // Fallback for unknown periods
+    return startDate ? new Date(startDate) : now;
+  } catch (error) {
+    console.error('Error calculating budget period start:', error);
+    return new Date(); // Return current date as safe fallback
   }
-  
-  return startDate || now;
 };
 
 // Check for low balance alerts
@@ -222,17 +301,23 @@ const checkBalanceAlerts = async (userId) => {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     
-    const transactions = await Transaction.find({
-      userId,
-      date: { $gte: monthStart }
-    });
+    let transactions = [];
+    try {
+      transactions = await Transaction.find({
+        userId,
+        date: { $gte: monthStart }
+      });
+    } catch (dbError) {
+      console.error('Error fetching transactions for balance check:', dbError);
+      return; // Skip balance alerts if we can't fetch transactions
+    }
 
     const totalIncome = transactions
-      .filter(t => t.type === 'income')
+      .filter(t => t && t.type === 'income' && typeof t.amount === 'number')
       .reduce((sum, t) => sum + t.amount, 0);
     
     const totalExpenses = transactions
-      .filter(t => t.type === 'expense')
+      .filter(t => t && t.type === 'expense' && typeof t.amount === 'number')
       .reduce((sum, t) => sum + t.amount, 0);
 
     const currentBalance = totalIncome - totalExpenses;
