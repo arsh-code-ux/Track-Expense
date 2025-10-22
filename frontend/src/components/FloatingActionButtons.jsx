@@ -13,21 +13,33 @@ export default function FloatingActionButtons() {
       color: 'from-orange-400 to-red-500',
       action: () => {
         setIsOpen(false)
+        console.log('📊 Analytics button clicked - navigating to dashboard')
+        navigate('/dashboard')
         // Switch to overview tab first, then scroll to charts section
         setTimeout(() => {
+          console.log('🔍 Looking for overview tab...')
           // Click the overview tab
           const overviewTab = document.querySelector('[data-tab="overview"]')
+          console.log('📈 Overview tab found:', !!overviewTab)
           if (overviewTab) {
             overviewTab.click()
+            console.log('✅ Overview tab clicked')
             // Wait for tab switch, then scroll to charts
             setTimeout(() => {
+              console.log('🔍 Looking for charts section...')
               const chartsSection = document.querySelector('[data-section="charts"]')
+              console.log('📊 Charts section found:', !!chartsSection)
               if (chartsSection) {
                 chartsSection.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                console.log('✅ Scrolled to charts section')
+              } else {
+                console.log('❌ Charts section not found!')
               }
-            }, 200)
+            }, 500)
+          } else {
+            console.log('❌ Overview tab not found!')
           }
-        }, 100)
+        }, 300)
       }
     },
     {
@@ -36,21 +48,33 @@ export default function FloatingActionButtons() {
       color: 'from-blue-400 to-indigo-500',
       action: () => {
         setIsOpen(false)
+        console.log('🎯 Budget button clicked - navigating to dashboard')
+        navigate('/dashboard')
         // Switch to budgets tab first, then trigger budget modal
         setTimeout(() => {
+          console.log('🔍 Looking for budgets tab...')
           // Click the budgets tab
           const budgetsTab = document.querySelector('[data-tab="budgets"]')
+          console.log('📋 Budgets tab found:', !!budgetsTab)
           if (budgetsTab) {
             budgetsTab.click()
+            console.log('✅ Budgets tab clicked')
             // Wait for tab switch, then click create budget
             setTimeout(() => {
+              console.log('🔍 Looking for create budget button...')
               const budgetButton = document.querySelector('[data-action="create-budget"]')
+              console.log('💰 Create budget button found:', !!budgetButton)
               if (budgetButton) {
                 budgetButton.click()
+                console.log('✅ Create budget button clicked')
+              } else {
+                console.log('❌ Create budget button not found!')
               }
-            }, 200)
+            }, 500)
+          } else {
+            console.log('❌ Budgets tab not found!')
           }
-        }, 100)
+        }, 300)
       }
     },
     {
@@ -59,21 +83,33 @@ export default function FloatingActionButtons() {
       color: 'from-green-400 to-emerald-500',
       action: () => {
         setIsOpen(false)
+        console.log('💰 Savings Goal button clicked - navigating to dashboard')
+        navigate('/dashboard')
         // Switch to savings tab first, then trigger savings goal modal
         setTimeout(() => {
+          console.log('🔍 Looking for savings tab...')
           // Click the savings tab
           const savingsTab = document.querySelector('[data-tab="savings"]')
+          console.log('🎯 Savings tab found:', !!savingsTab)
           if (savingsTab) {
             savingsTab.click()
+            console.log('✅ Savings tab clicked')
             // Wait for tab switch, then click create savings goal
             setTimeout(() => {
+              console.log('🔍 Looking for create savings goal button...')
               const savingsButton = document.querySelector('[data-action="create-savings-goal"]')
+              console.log('💎 Create savings goal button found:', !!savingsButton)
               if (savingsButton) {
                 savingsButton.click()
+                console.log('✅ Create savings goal button clicked')
+              } else {
+                console.log('❌ Create savings goal button not found!')
               }
-            }, 200)
+            }, 500)
+          } else {
+            console.log('❌ Savings tab not found!')
           }
-        }, 100)
+        }, 300)
       }
     },
     {
