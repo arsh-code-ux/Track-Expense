@@ -17,8 +17,12 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
       const token = getToken()
       if (!token || alerts.length > 0 || isGenerating || hasTriedAutoGenerate) return
 
-      console.log('🚨 No alerts found, auto-generating alerts...')
-      console.log('🌐 Using API URL:', API_BASE)
+      console.log('🚨 AlertsPanel Debug: Auto-generating alerts...')
+      console.log('🌐 AlertsPanel Debug: API URL:', API_BASE)
+      console.log('📊 AlertsPanel Debug: Environment:', import.meta.env.MODE)
+      console.log('🔄 AlertsPanel Debug: Has tried auto-generate:', hasTriedAutoGenerate)
+      console.log('⚙️ AlertsPanel Debug: Is generating:', isGenerating)
+      
       setIsGenerating(true)
       setError(null)
 
@@ -71,7 +75,9 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
     setError(null)
     
     try {
-      console.log('🔄 Manual refresh using API:', API_BASE)
+      console.log('🔄 AlertsPanel Debug: Manual refresh initiated')
+      console.log('🌐 AlertsPanel Debug: Using API URL:', API_BASE)
+      console.log('📊 AlertsPanel Debug: Current alerts count:', alerts.length)
       
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout for manual refresh
@@ -172,16 +178,6 @@ export default function AlertsPanel({ alerts, onAlertsUpdated }) {
             <AlertsList alerts={alerts} onAlertsUpdated={onAlertsUpdated} />
           )}
 
-          {/* Debug Info in Development */}
-          {import.meta.env.DEV && (
-            <div className="mt-4 p-3 bg-gray-100 dark:bg-gray-700 rounded text-xs">
-              <strong>Debug Info:</strong><br />
-              API URL: {API_BASE}<br />
-              Environment: {import.meta.env.MODE}<br />
-              Has tried auto-generate: {hasTriedAutoGenerate.toString()}<br />
-              Is generating: {isGenerating.toString()}
-            </div>
-          )}
         </div>
       </div>
     </div>
