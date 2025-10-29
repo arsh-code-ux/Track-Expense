@@ -64,46 +64,46 @@ export default function Login(){
 
   if (authLoading || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-light-cream via-silver-gray to-slate-blue">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-primary-50 to-neutral-100">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-slate-blue border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-dark-charcoal font-semibold">Loading...</p>
+          <div className="w-16 h-16 border-4 border-primary-600 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-navy font-semibold">Loading...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-light-cream via-silver-gray to-slate-blue p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-primary-50 to-neutral-100 p-4">
       <div className="max-w-md w-full">
-        <div className="text-center mb-8 animate-slide-down">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-slate-blue to-dark-charcoal rounded-2xl shadow-2xl mb-4">
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-primary-600 to-primary-800 rounded-2xl shadow-2xl mb-4">
             <span className="text-4xl">💰</span>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-dark-charcoal to-slate-blue bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-navy to-primary-700 bg-clip-text text-transparent mb-2">
             Track Expense
           </h1>
-          <p className="text-dark-charcoal/70">Smart financial management made simple</p>
+          <p className="text-neutral-600">Smart financial management made simple</p>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border-2 border-slate-blue/20 animate-slide-up">
-          <div className="flex mb-8 bg-silver-gray/30 rounded-xl p-1">
+        <div className="bg-white rounded-2xl shadow-2xl p-8 border border-neutral-200 animate-slide-up">
+          <div className="flex mb-8 bg-neutral-100 rounded-xl p-1.5">
             <button
               onClick={() => { setIsLogin(true); setError(''); setSuccess('') }}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
                 isLogin 
-                  ? 'bg-gradient-to-r from-slate-blue to-dark-charcoal text-white shadow-lg' 
-                  : 'text-dark-charcoal hover:bg-white/50'
+                  ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg' 
+                  : 'text-neutral-700 hover:bg-neutral-50'
               }`}
             >
               Login
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(''); setSuccess('') }}
-              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all ${
+              className={`flex-1 py-3 px-4 rounded-lg font-semibold transition-all duration-200 ${
                 !isLogin 
-                  ? 'bg-gradient-to-r from-slate-blue to-dark-charcoal text-white shadow-lg' 
-                  : 'text-dark-charcoal hover:bg-white/50'
+                  ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg' 
+                  : 'text-neutral-700 hover:bg-neutral-50'
               }`}
             >
               Sign Up
@@ -111,27 +111,27 @@ export default function Login(){
           </div>
 
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border-l-4 border-red-500 rounded-lg animate-slide-down">
-              <p className="text-red-800 text-sm font-medium">{error}</p>
+            <div className="mb-6 p-4 bg-danger-50 border-l-4 border-danger-500 rounded-lg animate-slide-down">
+              <p className="text-danger-800 text-sm font-medium">{error}</p>
             </div>
           )}
 
           {success && (
-            <div className="mb-6 p-4 bg-green-50 border-l-4 border-green-500 rounded-lg animate-slide-down">
-              <p className="text-green-800 text-sm font-medium">{success}</p>
+            <div className="mb-6 p-4 bg-success-50 border-l-4 border-success-500 rounded-lg animate-slide-down">
+              <p className="text-success-800 text-sm font-medium">{success}</p>
             </div>
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {!isLogin && (
               <div className="animate-slide-down">
-                <label className="block text-sm font-semibold text-dark-charcoal mb-2">
+                <label className="block text-sm font-semibold text-navy mb-2">
                   Full Name
                 </label>
                 <input
                   type="text"
                   placeholder="Enter your full name"
-                  className="w-full px-4 py-3 bg-white border-2 border-silver-gray rounded-xl focus:border-slate-blue focus:ring-4 focus:ring-slate-blue/20 outline-none transition-all text-dark-charcoal"
+                  className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none transition-all text-navy placeholder-neutral-400"
                   value={formData.name}
                   onChange={(e) => setFormData({...formData, name: e.target.value})}
                   required={!isLogin}
@@ -140,13 +140,13 @@ export default function Login(){
             )}
             
             <div>
-              <label className="block text-sm font-semibold text-dark-charcoal mb-2">
+              <label className="block text-sm font-semibold text-navy mb-2">
                 Email Address
               </label>
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="w-full px-4 py-3 bg-white border-2 border-silver-gray rounded-xl focus:border-slate-blue focus:ring-4 focus:ring-slate-blue/20 outline-none transition-all text-dark-charcoal"
+                className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none transition-all text-navy placeholder-neutral-400"
                 value={formData.email}
                 onChange={(e) => setFormData({...formData, email: e.target.value})}
                 required
@@ -154,13 +154,13 @@ export default function Login(){
             </div>
             
             <div>
-              <label className="block text-sm font-semibold text-dark-charcoal mb-2">
+              <label className="block text-sm font-semibold text-navy mb-2">
                 Password
               </label>
               <input
                 type="password"
                 placeholder="Enter your password"
-                className="w-full px-4 py-3 bg-white border-2 border-silver-gray rounded-xl focus:border-slate-blue focus:ring-4 focus:ring-slate-blue/20 outline-none transition-all text-dark-charcoal"
+                className="w-full px-4 py-3 bg-white border-2 border-neutral-200 rounded-xl focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none transition-all text-navy placeholder-neutral-400"
                 value={formData.password}
                 onChange={(e) => setFormData({...formData, password: e.target.value})}
                 required
@@ -169,11 +169,11 @@ export default function Login(){
 
             {isLogin && (
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center text-dark-charcoal cursor-pointer">
-                  <input type="checkbox" className="mr-2 w-4 h-4 accent-slate-blue" />
+                <label className="flex items-center text-neutral-700 cursor-pointer hover:text-navy transition-colors">
+                  <input type="checkbox" className="mr-2 w-4 h-4 accent-primary-600 rounded" />
                   Remember me
                 </label>
-                <a href="#" className="text-slate-blue hover:text-dark-charcoal font-semibold transition-colors">
+                <a href="#" className="text-primary-600 hover:text-primary-700 font-semibold transition-colors">
                   Forgot password?
                 </a>
               </div>
@@ -182,7 +182,7 @@ export default function Login(){
             <button
               type="submit"
               disabled={loading}
-              className="w-full py-4 bg-gradient-to-r from-slate-blue to-dark-charcoal text-white rounded-xl font-bold text-lg transition-all transform hover:scale-105 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg"
+              className="w-full py-4 bg-gradient-to-r from-primary-600 to-primary-700 text-white rounded-xl font-bold text-lg transition-all transform hover:-translate-y-0.5 hover:shadow-2xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none shadow-lg active:translate-y-0"
             >
               {loading ? (
                 <span className="flex items-center justify-center">
@@ -195,7 +195,9 @@ export default function Login(){
               ) : (
                 <span className="flex items-center justify-center">
                   {isLogin ? 'Login to Dashboard' : 'Create Account'}
-                  <span className="ml-2">→</span>
+                  <svg className="ml-2 w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+                  </svg>
                 </span>
               )}
             </button>
@@ -203,35 +205,35 @@ export default function Login(){
 
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-silver-gray"></div>
+              <div className="w-full border-t border-neutral-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-dark-charcoal/60">OR</span>
+              <span className="px-4 bg-white text-neutral-500 font-medium">OR</span>
             </div>
           </div>
 
           <button
             onClick={handleDemoMode}
-            className="w-full py-3 bg-white border-2 border-slate-blue text-slate-blue rounded-xl font-semibold hover:bg-slate-blue hover:text-white transition-all transform hover:scale-105"
+            className="w-full py-3 bg-white border-2 border-primary-600 text-primary-700 rounded-xl font-semibold hover:bg-primary-600 hover:text-white transition-all transform hover:-translate-y-0.5 active:translate-y-0"
           >
             <span className="flex items-center justify-center">
-              <span className="mr-2">🎯</span>
+              <span className="mr-2 text-xl">🎯</span>
               Try Demo Mode
             </span>
           </button>
         </div>
 
-        <div className="mt-8 text-center text-sm text-dark-charcoal/60">
+        <div className="mt-8 text-center text-sm text-neutral-600">
           <p>
             {isLogin ? "Don't have an account? " : "Already have an account? "}
             <button 
               onClick={() => setIsLogin(!isLogin)}
-              className="text-slate-blue font-semibold hover:text-dark-charcoal transition-colors"
+              className="text-primary-600 font-semibold hover:text-primary-700 transition-colors"
             >
               {isLogin ? 'Sign up' : 'Login'}
             </button>
           </p>
-          <p className="mt-4">
+          <p className="mt-4 text-neutral-500">
             © 2025 Track Expense. All rights reserved.
           </p>
         </div>
