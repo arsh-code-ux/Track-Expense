@@ -27,15 +27,15 @@ export default function BudgetCard({ budget, transactions, onBudgetUpdated }) {
   const percentageSpent = budget.amount > 0 ? (spent / budget.amount) * 100 : 0
   
   const getProgressColor = () => {
-    if (percentageSpent <= 50) return 'bg-green-500'
-    if (percentageSpent <= 80) return 'bg-yellow-500'
-    return 'bg-red-500'
+    if (percentageSpent <= 50) return 'bg-success-500'
+    if (percentageSpent <= 80) return 'bg-accent-500'
+    return 'bg-danger-500'
   }
 
   const getCardColor = () => {
-    if (percentageSpent <= 50) return 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800'
-    if (percentageSpent <= 80) return 'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800'
-    return 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800'
+    if (percentageSpent <= 50) return 'border-success-200 bg-gradient-to-br from-success-50 to-success-100'
+    if (percentageSpent <= 80) return 'border-accent-200 bg-gradient-to-br from-accent-50 to-accent-100'
+    return 'border-danger-200 bg-gradient-to-br from-danger-50 to-danger-100'
   }
 
   const deleteBudget = async () => {
@@ -68,18 +68,23 @@ export default function BudgetCard({ budget, transactions, onBudgetUpdated }) {
   }
 
   return (
-    <div className={`p-4 sm:p-6 rounded-xl border ${getCardColor()} transition-colors`}>
+    <div className={`p-4 sm:p-6 rounded-2xl border-2 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 ${getCardColor()}`}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 space-y-2 sm:space-y-0">
-        <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white capitalize">
+        <h3 className="text-base sm:text-xl font-bold text-navy capitalize flex items-center">
+          <span className="bg-primary-100 p-2 rounded-lg mr-2 text-lg">💰</span>
           {budget.category}
         </h3>
-        <div className="flex items-center space-x-2">
-          <span className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">
-            {budget.period === 'monthly' ? 'Monthly' : 'Weekly'}
+        <div className="flex items-center space-x-3">
+          <span className={`text-xs sm:text-sm font-bold px-3 py-1.5 rounded-full ${
+            budget.period === 'monthly' 
+              ? 'bg-primary-200 text-primary-800' 
+              : 'bg-accent-200 text-accent-800'
+          }`}>
+            {budget.period === 'monthly' ? '📅 Monthly' : '⏰ Weekly'}
           </span>
           <button
             onClick={deleteBudget}
-            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1"
+            className="text-neutral-400 hover:text-white hover:bg-danger-500 transition-all p-2 rounded-xl transform hover:-translate-y-0.5"
             title="Delete Budget"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -91,48 +96,50 @@ export default function BudgetCard({ budget, transactions, onBudgetUpdated }) {
       
       <div className="space-y-3">
         <div className="flex justify-between text-xs sm:text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Budget</span>
-          <span className="font-medium text-gray-900 dark:text-white break-all text-right">{formatAmount(budget.amount)}</span>
+          <span className="text-primary-700 font-semibold">Budget</span>
+          <span className="font-bold text-navy break-all text-right">{formatAmount(budget.amount)}</span>
         </div>
         
         <div className="flex justify-between text-xs sm:text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Spent</span>
-          <span className="font-medium text-gray-900 dark:text-white break-all text-right">{formatAmount(spent)}</span>
+          <span className="text-primary-700 font-semibold">Spent</span>
+          <span className="font-bold text-navy break-all text-right">{formatAmount(spent)}</span>
         </div>
         
         <div className="flex justify-between text-xs sm:text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Remaining</span>
-          <span className={`font-medium break-all text-right ${remaining >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+          <span className="text-primary-700 font-semibold">Remaining</span>
+          <span className={`font-bold break-all text-right ${remaining >= 0 ? 'text-success-600' : 'text-danger-600'}`}>
             {formatAmount(remaining)}
           </span>
         </div>
         
         {/* Progress Bar */}
         <div className="mt-4">
-          <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+          <div className="flex justify-between text-xs text-primary-700 font-semibold mb-2">
             <span>Progress</span>
             <span>{Math.min(percentageSpent, 100).toFixed(0)}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+          <div className="w-full bg-neutral-200 rounded-full h-3 shadow-inner">
             <div
-              className={`h-2 rounded-full transition-all duration-300 ${getProgressColor()}`}
+              className={`h-3 rounded-full transition-all duration-500 shadow-lg ${getProgressColor()}`}
               style={{ width: `${Math.min(percentageSpent, 100)}%` }}
             ></div>
           </div>
         </div>
         
         {percentageSpent > 100 && (
-          <div className="mt-3 p-2 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
-            <p className="text-xs text-red-700 dark:text-red-300 font-medium break-words">
-              ⚠️ Budget exceeded by {formatAmount(spent - budget.amount)}
+          <div className="mt-3 p-3 bg-gradient-to-r from-danger-100 to-danger-200 border-2 border-danger-300 rounded-xl">
+            <p className="text-xs text-danger-800 font-bold break-words flex items-center">
+              <span className="text-lg mr-2">⚠️</span>
+              Budget exceeded by {formatAmount(spent - budget.amount)}
             </p>
           </div>
         )}
         
         {percentageSpent > 80 && percentageSpent <= 100 && (
-          <div className="mt-3 p-2 bg-yellow-100 dark:bg-yellow-900/30 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-            <p className="text-xs text-yellow-700 dark:text-yellow-300 font-medium">
-              ⚠️ Approaching budget limit
+          <div className="mt-3 p-3 bg-gradient-to-r from-accent-100 to-accent-200 border-2 border-accent-300 rounded-xl">
+            <p className="text-xs text-accent-800 font-bold flex items-center">
+              <span className="text-lg mr-2">⚠️</span>
+              Approaching budget limit
             </p>
           </div>
         )}

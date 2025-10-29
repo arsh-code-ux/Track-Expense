@@ -15,15 +15,15 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
   const isCompleted = actualCurrentAmount >= goal.targetAmount
   
   const getProgressColor = () => {
-    if (isCompleted) return 'bg-green-500'
-    if (progressPercentage >= 75) return 'bg-blue-500'
-    if (progressPercentage >= 50) return 'bg-yellow-500'
-    return 'bg-gray-400'
+    if (isCompleted) return 'bg-success-500'
+    if (progressPercentage >= 75) return 'bg-primary-500'
+    if (progressPercentage >= 50) return 'bg-accent-500'
+    return 'bg-neutral-400'
   }
 
   const getCardColor = () => {
-    if (isCompleted) return 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800'
-    return 'border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-700'
+    if (isCompleted) return 'border-success-300 bg-gradient-to-br from-success-50 to-success-100'
+    return 'border-primary-200 bg-gradient-to-br from-white to-primary-50'
   }
 
   const formatDate = (dateString) => {
@@ -117,23 +117,26 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
   }
 
   return (
-    <div className={`p-4 sm:p-6 rounded-xl border shadow-lg transition-colors ${getCardColor()}`}>
+    <div className={`p-4 sm:p-6 rounded-2xl border-2 shadow-xl hover:shadow-2xl transition-all transform hover:-translate-y-1 ${getCardColor()}`}>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between mb-4 space-y-2 sm:space-y-0">
         <div className="min-w-0 flex-1">
-          <h3 className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white break-words">{goal.title}</h3>
+          <h3 className="text-base sm:text-xl font-bold text-navy break-words flex items-center">
+            <span className="bg-primary-100 p-2 rounded-lg mr-2 text-lg">🎯</span>
+            {goal.title}
+          </h3>
           {goal.description && (
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1 break-words">{goal.description}</p>
+            <p className="text-xs sm:text-sm text-primary-700 mt-2 break-words font-medium">{goal.description}</p>
           )}
         </div>
         <div className="flex items-center space-x-2 self-start sm:self-auto flex-shrink-0">
           {isCompleted && (
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
+            <span className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold bg-gradient-to-r from-success-100 to-success-200 text-success-800">
               ✓ Completed
             </span>
           )}
           <button
             onClick={() => updateCurrentAmount()}
-            className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors p-1"
+            className="text-primary-500 hover:text-white hover:bg-primary-500 transition-all p-2 rounded-xl transform hover:-translate-y-0.5"
             title="Update Current Amount"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +145,7 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
           </button>
           <button
             onClick={deleteSavingsGoal}
-            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1"
+            className="text-neutral-400 hover:text-white hover:bg-danger-500 transition-all p-2 rounded-xl transform hover:-translate-y-0.5"
             title="Delete Savings Goal"
           >
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,38 +157,38 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
       
       <div className="space-y-3">
         <div className="flex justify-between text-xs sm:text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Target Amount</span>
-          <span className="font-medium text-gray-900 dark:text-white break-all text-right">{formatAmount(goal.targetAmount)}</span>
+          <span className="text-primary-700 font-semibold">Target Amount</span>
+          <span className="font-bold text-navy break-all text-right">{formatAmount(goal.targetAmount)}</span>
         </div>
         
         <div className="flex justify-between text-xs sm:text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Current Amount</span>
-          <span className="font-medium text-green-600 dark:text-green-400 break-all text-right">{formatAmount(actualCurrentAmount)}</span>
+          <span className="text-primary-700 font-semibold">Current Amount</span>
+          <span className="font-bold text-success-600 break-all text-right">{formatAmount(actualCurrentAmount)}</span>
         </div>
         
         <div className="flex justify-between text-xs sm:text-sm">
-          <span className="text-gray-600 dark:text-gray-400">Remaining</span>
-          <span className={`font-medium break-all text-right ${remaining <= 0 ? 'text-green-600 dark:text-green-400' : 'text-gray-900 dark:text-white'}`}>
+          <span className="text-primary-700 font-semibold">Remaining</span>
+          <span className={`font-bold break-all text-right ${remaining <= 0 ? 'text-success-600' : 'text-navy'}`}>
             {formatAmount(Math.max(0, remaining))}
           </span>
         </div>
         
         {goal.deadline && (
           <div className="flex justify-between text-xs sm:text-sm">
-            <span className="text-gray-600 dark:text-gray-400">Target Date</span>
-            <span className="font-medium text-gray-900 dark:text-white text-right">{formatDate(goal.deadline)}</span>
+            <span className="text-primary-700 font-semibold">Target Date</span>
+            <span className="font-bold text-navy text-right">📅 {formatDate(goal.deadline)}</span>
           </div>
         )}
         
         {/* Progress Bar */}
         <div className="mt-4">
-          <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+          <div className="flex justify-between text-xs text-primary-700 font-semibold mb-2">
             <span>Progress</span>
             <span>{Math.min(progressPercentage, 100).toFixed(0)}%</span>
           </div>
-          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+          <div className="w-full bg-neutral-200 rounded-full h-3 shadow-inner">
             <div
-              className={`h-3 rounded-full transition-all duration-300 ${getProgressColor()}`}
+              className={`h-3 rounded-full transition-all duration-500 shadow-lg ${getProgressColor()}`}
               style={{ width: `${Math.min(progressPercentage, 100)}%` }}
             ></div>
           </div>
@@ -195,20 +198,21 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
         {!isCompleted && goal.deadline && (
           <div className="mt-4 space-y-2">
             {daysRemaining > 0 ? (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs space-y-1 sm:space-y-0">
-                <span className="text-gray-500 dark:text-gray-400">
-                  {daysRemaining} days remaining
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs space-y-1 sm:space-y-0 bg-primary-100 p-3 rounded-xl">
+                <span className="text-primary-800 font-bold">
+                  ⏰ {daysRemaining} days remaining
                 </span>
                 {remaining > 0 && (
-                  <span className="text-gray-500 dark:text-gray-400 break-all">
+                  <span className="text-primary-700 font-semibold break-all">
                     {formatAmount(remaining / Math.max(daysRemaining, 1))}/day needed
                   </span>
                 )}
               </div>
             ) : (
-              <div className="p-2 bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg">
-                <p className="text-xs text-red-700 dark:text-red-300 font-medium">
-                  ⚠️ Target date has passed
+              <div className="p-3 bg-gradient-to-r from-danger-100 to-danger-200 border-2 border-danger-300 rounded-xl">
+                <p className="text-xs text-danger-800 font-bold flex items-center">
+                  <span className="text-lg mr-2">⚠️</span>
+                  Target date has passed
                 </p>
               </div>
             )}
@@ -216,17 +220,19 @@ export default function SavingsGoalCard({ goal, onSavingsUpdated, currentBalance
         )}
         
         {isCompleted && (
-          <div className="mt-4 p-2 bg-green-100 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg">
-            <p className="text-xs text-green-700 dark:text-green-300 font-medium break-words">
-              🎉 Goal achieved! Great job saving!
+          <div className="mt-4 p-3 bg-gradient-to-r from-success-100 to-success-200 border-2 border-success-300 rounded-xl">
+            <p className="text-xs text-success-800 font-bold break-words flex items-center">
+              <span className="text-lg mr-2">🎉</span>
+              Goal achieved! Great job saving!
             </p>
           </div>
         )}
         
         {progressPercentage >= 90 && !isCompleted && (
-          <div className="mt-4 p-2 bg-blue-100 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg">
-            <p className="text-xs text-blue-700 dark:text-blue-300 font-medium break-words">
-              🎯 You're almost there! Just {formatAmount(remaining)} to go!
+          <div className="mt-4 p-3 bg-gradient-to-r from-primary-100 to-primary-200 border-2 border-primary-300 rounded-xl">
+            <p className="text-xs text-primary-800 font-bold break-words flex items-center">
+              <span className="text-lg mr-2">🎯</span>
+              You're almost there! Just {formatAmount(remaining)} to go!
             </p>
           </div>
         )}

@@ -210,37 +210,37 @@ export default function Dashboard() {
 
   if (loading && transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mb-4"></div>
-        <p className="text-gray-600 dark:text-gray-400">Loading your financial dashboard...</p>
-        <p className="text-sm text-gray-500 dark:text-gray-500 mt-2">⚡ Optimized for fast loading</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50 to-neutral-100">
+        <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-600 border-t-transparent mb-4"></div>
+        <p className="text-navy font-semibold text-lg">Loading your financial dashboard...</p>
+        <p className="text-sm text-neutral-500 mt-2">⚡ Optimized for fast loading</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors">
+    <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 min-h-screen">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-4xl font-bold bg-gradient-to-r from-navy to-primary-700 bg-clip-text text-transparent">
           {isAuthenticated ? `Welcome back, ${user?.name || 'User'}!` : 'Expense Tracker Dashboard'}
         </h1>
-        <p className="text-gray-600 dark:text-gray-300 mt-2">
+        <p className="text-neutral-600 mt-2 text-lg">
           {isAuthenticated ? 'Here\'s your financial overview' : 'Demo mode - Track your expenses'}
         </p>
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-        <nav className="-mb-px flex space-x-6 overflow-x-auto">
+      <div className="border-b border-neutral-200 mb-8">
+        <nav className="-mb-px flex space-x-8 overflow-x-auto">
           {tabs.map(tab => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`py-2 px-1 border-b-2 font-medium text-sm capitalize transition-colors whitespace-nowrap ${
+              className={`py-3 px-2 border-b-2 font-semibold text-sm capitalize transition-all whitespace-nowrap ${
                 activeTab === tab
-                  ? 'border-blue-500 text-blue-600 dark:text-blue-400 dark:border-blue-400'
-                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+                  ? 'border-primary-600 text-primary-700 bg-primary-50/50 rounded-t-lg'
+                  : 'border-transparent text-neutral-600 hover:text-navy hover:border-neutral-300'
               }`}
             >
               {tab}
@@ -254,17 +254,38 @@ export default function Dashboard() {
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-green-50 dark:bg-green-900/30 p-6 rounded-xl border border-green-200 dark:border-green-700 transition-colors">
-              <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Total Income</h3>
-              <p className="text-3xl font-bold text-green-600 dark:text-green-300">{formatAmount(totalIncome)}</p>
+            <div className="bg-gradient-to-br from-success-50 to-success-100 p-6 rounded-2xl border-2 border-success-200 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold text-success-800">Total Income</h3>
+                <div className="bg-success-500 p-2 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-success-700">{formatAmount(totalIncome)}</p>
             </div>
-            <div className="bg-red-50 dark:bg-red-900/30 p-6 rounded-xl border border-red-200 dark:border-red-700 transition-colors">
-              <h3 className="text-lg font-semibold text-red-800 dark:text-red-200">Total Expenses</h3>
-              <p className="text-3xl font-bold text-red-600 dark:text-red-300">{formatAmount(totalExpenses)}</p>
+            <div className="bg-gradient-to-br from-danger-50 to-danger-100 p-6 rounded-2xl border-2 border-danger-200 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-lg font-semibold text-danger-800">Total Expenses</h3>
+                <div className="bg-danger-500 p-2 rounded-xl">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+                  </svg>
+                </div>
+              </div>
+              <p className="text-3xl font-bold text-danger-700">{formatAmount(totalExpenses)}</p>
             </div>
-            <div className={`p-6 rounded-xl border transition-colors ${balance >= 0 ? 'bg-blue-50 dark:bg-blue-900/30 border-blue-200 dark:border-blue-700' : 'bg-orange-50 dark:bg-orange-900/30 border-orange-200 dark:border-orange-700'}`}>
-              <h3 className={`text-lg font-semibold ${balance >= 0 ? 'text-blue-800 dark:text-blue-200' : 'text-orange-800 dark:text-orange-200'}`}>Balance</h3>
-              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-blue-600 dark:text-blue-300' : 'text-orange-600 dark:text-orange-300'}`}>
+            <div className={`p-6 rounded-2xl border-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 ${balance >= 0 ? 'bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200' : 'bg-gradient-to-br from-accent-50 to-accent-100 border-accent-200'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <h3 className={`text-lg font-semibold ${balance >= 0 ? 'text-primary-800' : 'text-accent-800'}`}>Balance</h3>
+                <div className={`p-2 rounded-xl ${balance >= 0 ? 'bg-primary-500' : 'bg-accent-500'}`}>
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              </div>
+              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-primary-700' : 'text-accent-700'}`}>
                 {formatAmount(balance)}
               </p>
             </div>
@@ -273,8 +294,11 @@ export default function Dashboard() {
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
             {/* Expense Categories Pie Chart */}
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 transition-colors">
-              <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Expenses by Category</h3>
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-neutral-100 hover:shadow-2xl transition-all">
+              <h3 className="text-xl font-bold mb-6 text-navy flex items-center">
+                <span className="bg-primary-100 p-2 rounded-lg mr-3">📊</span>
+                Expenses by Category
+              </h3>
               {getCategoryData().length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
@@ -303,36 +327,39 @@ export default function Dashboard() {
             </div>
 
             {/* Monthly Income vs Expenses */}
-            <div className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 transition-colors">
-              <h3 className="text-lg sm:text-xl font-semibold mb-4 text-gray-900 dark:text-white">Monthly Overview</h3>
+            <div className="bg-white p-6 rounded-2xl shadow-xl border border-neutral-100 hover:shadow-2xl transition-all">
+              <h3 className="text-xl font-bold mb-6 text-navy flex items-center">
+                <span className="bg-accent-100 p-2 rounded-lg mr-3">📈</span>
+                Monthly Overview
+              </h3>
               {getMonthlyData().length > 0 ? (
-                <ResponsiveContainer width="100%" height={250} className="sm:h-[300px]">
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={getMonthlyData()}>
-                    <XAxis dataKey="month" />
-                    <YAxis />
-                    <Tooltip formatter={(value) => [formatAmount(value), '']} />
+                    <XAxis dataKey="month" stroke="#102a43" />
+                    <YAxis stroke="#102a43" />
+                    <Tooltip formatter={(value) => [formatAmount(value), '']} contentStyle={{backgroundColor: '#fff', borderRadius: '12px', border: '2px solid #e5e7eb'}} />
                     <Legend />
-                    <Bar dataKey="income" fill="#10B981" name="Income" />
-                    <Bar dataKey="expense" fill="#EF4444" name="Expenses" />
+                    <Bar dataKey="income" fill="#22c55e" name="Income" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="expense" fill="#dc2626" name="Expenses" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-64 text-gray-500 dark:text-gray-400">
-                  No monthly data available
+                <div className="flex flex-col items-center justify-center h-64 text-neutral-500">
+                  <div className="bg-neutral-100 w-20 h-20 rounded-full flex items-center justify-center mb-4">
+                    <span className="text-4xl">📊</span>
+                  </div>
+                  <p className="font-medium">No monthly data available</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Recent Transactions */}
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 transition-colors">
-            <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Recent Transactions</h3>
-            <TransactionList 
-              transactions={transactions.slice(0, 5)} 
-              onTransactionUpdated={fetchData}
-              showLimited={true}
-            />
-          </div>
+          <TransactionList 
+            transactions={transactions.slice(0, 5)} 
+            onTransactionUpdated={fetchData}
+            showLimited={true}
+          />
         </>
       )}
 
@@ -353,29 +380,39 @@ export default function Dashboard() {
         <div className="space-y-6">
           {isAuthenticated ? (
             <>
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Budget Management</h2>
+              <div className="flex justify-between items-center bg-gradient-to-r from-primary-50 to-neutral-50 p-6 rounded-2xl border border-primary-100">
+                <h2 className="text-2xl sm:text-3xl font-bold text-navy flex items-center">
+                  <span className="bg-primary-100 p-3 rounded-xl mr-3 text-2xl">💰</span>
+                  Budget Management
+                </h2>
                 <button 
                   onClick={() => setShowBudgetModal(true)}
-                  className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white px-4 py-2 rounded-lg transition-colors text-sm sm:text-base"
+                  className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl transition-all text-sm sm:text-base font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  Create Budget
+                  ➕ Create Budget
                 </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {budgets.map(budget => (
-                  <BudgetCard key={budget._id} budget={budget} transactions={transactions} />
+                  <BudgetCard key={budget._id} budget={budget} transactions={transactions} onBudgetUpdated={fetchData} />
                 ))}
               </div>
               {budgets.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">No budgets created yet. Create your first budget to start tracking your spending.</p>
+                <div className="text-center py-16 bg-gradient-to-br from-neutral-50 to-primary-50 rounded-2xl border-2 border-dashed border-primary-300">
+                  <div className="bg-primary-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="text-5xl">💰</span>
+                  </div>
+                  <p className="text-primary-800 font-semibold text-lg">No budgets created yet.</p>
+                  <p className="text-primary-600 mt-2">Create your first budget to start tracking your spending.</p>
                 </div>
               )}
             </>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">Please login to access budget features.</p>
+            <div className="text-center py-16 bg-gradient-to-br from-neutral-50 to-primary-50 rounded-2xl border-2 border-primary-200">
+              <div className="bg-primary-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-5xl">🔒</span>
+              </div>
+              <p className="text-primary-800 font-semibold text-lg">Please login to access budget features.</p>
             </div>
           )}
         </div>
@@ -386,29 +423,39 @@ export default function Dashboard() {
         <div className="space-y-6">
           {isAuthenticated ? (
             <>
-              <div className="flex justify-between items-center">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Savings Goals</h2>
+              <div className="flex justify-between items-center bg-gradient-to-r from-success-50 to-neutral-50 p-6 rounded-2xl border border-success-100">
+                <h2 className="text-2xl sm:text-3xl font-bold text-navy flex items-center">
+                  <span className="bg-success-100 p-3 rounded-xl mr-3 text-2xl">🎯</span>
+                  Savings Goals
+                </h2>
                 <button 
                   onClick={() => setShowSavingsModal(true)}
-                  className="bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800 text-white px-4 py-2 rounded-lg transition-colors"
+                  className="bg-gradient-to-r from-success-600 to-success-700 hover:from-success-700 hover:to-success-800 text-white px-6 py-3 rounded-xl transition-all font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
                 >
-                  Create Goal
+                  ➕ Create Goal
                 </button>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {savingsGoals.map(goal => (
                   <SavingsGoalCard key={goal._id} goal={goal} currentBalance={balance} onSavingsUpdated={fetchData} />
                 ))}
               </div>
               {savingsGoals.length === 0 && (
-                <div className="text-center py-12">
-                  <p className="text-gray-500 dark:text-gray-400">No savings goals set yet. Create your first goal to start saving.</p>
+                <div className="text-center py-16 bg-gradient-to-br from-neutral-50 to-success-50 rounded-2xl border-2 border-dashed border-success-300">
+                  <div className="bg-success-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <span className="text-5xl">🎯</span>
+                  </div>
+                  <p className="text-success-800 font-semibold text-lg">No savings goals set yet.</p>
+                  <p className="text-success-600 mt-2">Create your first goal to start saving.</p>
                 </div>
               )}
             </>
           ) : (
-            <div className="text-center py-12">
-              <p className="text-gray-500 dark:text-gray-400">Please login to access savings goals.</p>
+            <div className="text-center py-16 bg-gradient-to-br from-neutral-50 to-success-50 rounded-2xl border-2 border-success-200">
+              <div className="bg-success-100 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-6">
+                <span className="text-5xl">🔒</span>
+              </div>
+              <p className="text-success-800 font-semibold text-lg">Please login to access savings goals.</p>
             </div>
           )}
         </div>
@@ -416,25 +463,52 @@ export default function Dashboard() {
 
       {/* Alerts Tab */}
       {activeTab === 'alerts' && (
-        <div className="space-y-4 sm:space-y-6">
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">Financial Alerts</h2>
+        <div className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 bg-gradient-to-r from-danger-50 to-neutral-50 p-6 rounded-2xl border border-danger-100">
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy flex items-center">
+              <span className="bg-danger-100 p-3 rounded-xl mr-3 text-2xl">🔔</span>
+              Financial Alerts
+            </h2>
             <button 
               onClick={fetchData}
-              className="bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white px-4 py-2 rounded-lg text-sm sm:text-base transition-colors"
+              className="bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 text-white px-6 py-3 rounded-xl text-sm sm:text-base transition-all font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
             >
-              Refresh Alerts
+              🔄 Refresh Alerts
             </button>
           </div>
           
-          <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700">
-            <h3 className="font-semibold mb-2 text-gray-900 dark:text-white">Debug Information:</h3>
-            <div className="space-y-1 text-sm">
-              <p className="text-gray-700 dark:text-gray-300">Authenticated: <span className="font-mono text-blue-600 dark:text-blue-400">{isAuthenticated ? 'YES' : 'NO'}</span></p>
-              <p className="text-gray-700 dark:text-gray-300">User: <span className="font-mono text-blue-600 dark:text-blue-400">{user?.name || 'None'}</span></p>
-              <p className="text-gray-700 dark:text-gray-300">Token: <span className="font-mono text-blue-600 dark:text-blue-400">{localStorage.getItem('token') ? 'Present' : 'Missing'}</span></p>
-              <p className="text-gray-700 dark:text-gray-300">Alerts Count: <span className="font-mono text-blue-600 dark:text-blue-400">{alerts?.length || 0}</span></p>
-              <p className="text-gray-700 dark:text-gray-300">Loading: <span className="font-mono text-blue-600 dark:text-blue-400">{loading ? 'YES' : 'NO'}</span></p>
+          <div className="bg-white p-6 rounded-2xl border-2 border-primary-200 shadow-lg">
+            <h3 className="font-bold mb-4 text-navy text-lg flex items-center">
+              <span className="bg-primary-100 p-2 rounded-lg mr-2">🔍</span>
+              Debug Information
+            </h3>
+            <div className="space-y-3 text-sm">
+              <p className="text-primary-800 flex justify-between">
+                <span className="font-semibold">Authenticated:</span>
+                <span className={`font-mono px-3 py-1 rounded-lg ${isAuthenticated ? 'bg-success-100 text-success-800' : 'bg-danger-100 text-danger-800'}`}>
+                  {isAuthenticated ? '✅ YES' : '❌ NO'}
+                </span>
+              </p>
+              <p className="text-primary-800 flex justify-between">
+                <span className="font-semibold">User:</span>
+                <span className="font-mono px-3 py-1 rounded-lg bg-primary-100 text-primary-800">{user?.name || 'None'}</span>
+              </p>
+              <p className="text-primary-800 flex justify-between">
+                <span className="font-semibold">Token:</span>
+                <span className={`font-mono px-3 py-1 rounded-lg ${localStorage.getItem('token') ? 'bg-success-100 text-success-800' : 'bg-danger-100 text-danger-800'}`}>
+                  {localStorage.getItem('token') ? '✅ Present' : '❌ Missing'}
+                </span>
+              </p>
+              <p className="text-primary-800 flex justify-between">
+                <span className="font-semibold">Alerts Count:</span>
+                <span className="font-mono px-3 py-1 rounded-lg bg-accent-100 text-accent-800">{alerts?.length || 0}</span>
+              </p>
+              <p className="text-primary-800 flex justify-between">
+                <span className="font-semibold">Loading:</span>
+                <span className={`font-mono px-3 py-1 rounded-lg ${loading ? 'bg-accent-100 text-accent-800' : 'bg-neutral-100 text-neutral-800'}`}>
+                  {loading ? '⏳ YES' : '✅ NO'}
+                </span>
+              </p>
             </div>
           </div>
           
