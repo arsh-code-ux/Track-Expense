@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import SharedNav from '../components/SharedNav'
+import SharedFooter from '../components/SharedFooter'
 
 export default function LandingPage() {
   const { isAuthenticated } = useAuth()
   const navigate = useNavigate()
-  const [scrollY, setScrollY] = useState(0)
   const [expandedFaq, setExpandedFaq] = useState(null)
 
   useEffect(() => {
@@ -14,52 +15,78 @@ export default function LandingPage() {
     }
   }, [isAuthenticated, navigate])
 
-  useEffect(() => {
-    const handleScroll = () => setScrollY(window.scrollY)
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
-
   const features = [
     {
       icon: "💰",
       title: "Smart Budget Tracking",
-      description: "Set budgets for different categories and get alerts when you're approaching limits"
+      description: "Set budgets for different categories and get alerts when you're approaching limits",
+      details: ["Real-time budget monitoring", "Category-wise spending limits", "Overspending alerts", "Weekly/Monthly budget cycles"]
     },
     {
       icon: "📊",
       title: "Visual Analytics",
-      description: "Beautiful charts and graphs to understand your spending patterns at a glance"
+      description: "Beautiful charts and graphs to understand your spending patterns at a glance",
+      details: ["Interactive pie charts", "Bar graphs for trends", "Monthly comparisons", "Category breakdowns"]
     },
     {
       icon: "🏷️",
       title: "Custom Categories",
-      description: "Organize expenses with custom categories tailored to your lifestyle"
+      description: "Organize expenses with custom categories tailored to your lifestyle",
+      details: ["9+ preset categories", "Create custom categories", "Color-coded organization", "Category-wise filtering"]
     },
     {
       icon: "🔒",
       title: "Secure & Private",
-      description: "Bank-level security with encrypted data storage and secure authentication"
+      description: "Bank-level security with encrypted data storage and secure authentication",
+      details: ["256-bit SSL encryption", "JWT authentication", "Secure password storage", "No data sharing"]
     },
     {
       icon: "📱",
       title: "Responsive Design",
-      description: "Access your finances from any device - desktop, tablet, or mobile"
+      description: "Access your finances from any device - desktop, tablet, or mobile",
+      details: ["Mobile-first design", "Touch-optimized interface", "Cross-platform sync", "Works offline"]
     },
     {
       icon: "💾",
       title: "Export Data",
-      description: "Export your financial data in multiple formats for tax preparation or analysis"
+      description: "Export your financial data in multiple formats for tax preparation or analysis",
+      details: ["CSV export", "PDF reports", "Date range selection", "Custom filtering"]
     },
     {
       icon: "🔔",
       title: "Smart Alerts",
-      description: "Get notified about unusual spending, upcoming bills, and budget limits"
+      description: "Get notified about unusual spending, upcoming bills, and budget limits",
+      details: ["Budget limit warnings", "Unusual spending detection", "Bill reminders", "Goal progress updates"]
     },
     {
       icon: "📈",
       title: "Monthly Reports",
-      description: "Comprehensive monthly reports with insights and spending trends"
+      description: "Comprehensive monthly reports with insights and spending trends",
+      details: ["Automated reports", "Spending insights", "Savings recommendations", "Year-over-year comparison"]
+    },
+    {
+      icon: "🎯",
+      title: "Savings Goals",
+      description: "Set and track multiple savings goals with progress monitoring",
+      details: ["Multiple goal tracking", "Progress visualization", "Target date reminders", "Milestone celebrations"]
+    },
+    {
+      icon: "💱",
+      title: "Multi-Currency",
+      description: "Support for multiple currencies with automatic conversion",
+      details: ["10+ currencies", "Real-time exchange rates", "Currency conversion", "Default currency setting"]
+    },
+    {
+      icon: "🤖",
+      title: "AI Insights",
+      description: "Get intelligent spending recommendations and financial advice",
+      details: ["Smart spending patterns", "Personalized tips", "Anomaly detection", "Future predictions"]
+    },
+    {
+      icon: "🔄",
+      title: "Recurring Transactions",
+      description: "Auto-track recurring expenses and income for better planning",
+      details: ["Auto-repeat transactions", "Subscription tracking", "Bill reminders", "Frequency customization"]
     }
   ]
 
@@ -90,8 +117,134 @@ export default function LandingPage() {
     {
       question: "Do I need to connect my bank account?",
       answer: "No, TrackExpense allows you to manually enter your expenses. We don't require bank account connections, giving you complete control over your data."
+    },
+    {
+      question: "Can I track multiple currencies?",
+      answer: "Yes! TrackExpense supports 10+ major currencies with real-time conversion rates. Perfect for travelers and international users."
+    },
+    {
+      question: "Is there a mobile app?",
+      answer: "While we don't have a native app yet, our web app is fully responsive and works perfectly on mobile browsers. You can add it to your home screen for app-like experience."
+    },
+    {
+      question: "Can I share access with family members?",
+      answer: "Currently, TrackExpense is designed for individual use. However, you can export reports to share with family or financial advisors."
     }
   ]
+
+  const testimonials = [
+    {
+      name: "Sarah Johnson",
+      role: "Freelance Designer",
+      image: "👩‍💼",
+      rating: 5,
+      text: "TrackExpense has completely transformed how I manage my business finances. The budget alerts have saved me from overspending multiple times!"
+    },
+    {
+      name: "Michael Chen",
+      role: "Software Engineer",
+      image: "👨‍💻",
+      rating: 5,
+      text: "As a tech person, I appreciate the clean interface and powerful features. The analytics dashboard gives me insights I never had before."
+    },
+    {
+      name: "Priya Patel",
+      role: "Small Business Owner",
+      image: "👩‍💼",
+      rating: 5,
+      text: "The export feature is a lifesaver during tax season. I can generate reports in seconds and my accountant loves the organized data!"
+    },
+    {
+      name: "David Rodriguez",
+      role: "College Student",
+      image: "👨‍🎓",
+      rating: 5,
+      text: "Perfect for students on a budget! The free version has everything I need. I've saved over $500 in the first 3 months by tracking my spending."
+    },
+    {
+      name: "Emma Wilson",
+      role: "Marketing Manager",
+      image: "👩‍💼",
+      rating: 5,
+      text: "The savings goals feature keeps me motivated. I'm finally building my emergency fund and the progress tracking makes it fun!"
+    },
+    {
+      name: "James Taylor",
+      role: "Entrepreneur",
+      image: "👨‍💼",
+      rating: 5,
+      text: "I've tried many expense trackers, but TrackExpense stands out with its intuitive design and powerful insights. Highly recommended!"
+    }
+  ]
+
+  const pricingPlans = [
+    {
+      name: "Free",
+      price: "$0",
+      period: "forever",
+      description: "Perfect for getting started",
+      features: [
+        "Unlimited transactions",
+        "Basic analytics & charts",
+        "Up to 3 budgets",
+        "Up to 2 savings goals",
+        "9 preset categories",
+        "CSV export",
+        "Email support"
+      ],
+      popular: false,
+      cta: "Get Started Free"
+    },
+    {
+      name: "Pro",
+      price: "$9.99",
+      period: "per month",
+      description: "For serious money managers",
+      features: [
+        "Everything in Free",
+        "Unlimited budgets & goals",
+        "Advanced analytics & insights",
+        "AI-powered recommendations",
+        "Custom categories",
+        "PDF & CSV export",
+        "Recurring transactions",
+        "Priority support",
+        "Multi-device sync",
+        "Dark mode"
+      ],
+      popular: true,
+      cta: "Start Free Trial"
+    },
+    {
+      name: "Family",
+      price: "$19.99",
+      period: "per month",
+      description: "For the whole family",
+      features: [
+        "Everything in Pro",
+        "Up to 5 family members",
+        "Shared budgets",
+        "Family financial reports",
+        "Parental controls",
+        "Allowance tracking",
+        "Bill splitting",
+        "Dedicated account manager"
+      ],
+      popular: false,
+      cta: "Start Free Trial"
+    }
+  ]
+
+  const stats = [
+    { number: "25,000+", label: "Active Users", icon: "👥" },
+    { number: "$5M+", label: "Money Tracked", icon: "💰" },
+    { number: "500K+", label: "Transactions Logged", icon: "📝" },
+    { number: "4.9/5", label: "User Rating", icon: "⭐" },
+    { number: "50+", label: "Countries", icon: "🌍" },
+    { number: "99.9%", label: "Uptime", icon: "🚀" }
+  ]
+
+  const [selectedFeature, setSelectedFeature] = useState(null)
 
   // If user is authenticated, they'll be redirected by useEffect
   if (isAuthenticated) {
@@ -100,38 +253,8 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-primary-50/30">
-      {/* Modern Navigation */}
-      <nav 
-        className={`fixed w-full z-50 transition-all duration-300 ${
-          scrollY > 50 
-            ? 'bg-white/95 backdrop-blur-lg shadow-lg border-b border-neutral-200' 
-            : 'bg-transparent'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-3">
-              <div className="bg-gradient-to-br from-primary-600 to-primary-700 p-2 rounded-xl shadow-lg">
-                <span className="text-2xl">💰</span>
-              </div>
-              <span className="text-2xl font-bold bg-gradient-to-r from-primary-700 to-primary-900 bg-clip-text text-transparent">
-                TrackExpense
-              </span>
-            </div>
-            <div className="hidden md:flex items-center space-x-8">
-              <a href="#features" className="text-neutral-700 hover:text-primary-600 font-medium transition-colors">Features</a>
-              <a href="#how-it-works" className="text-neutral-700 hover:text-primary-600 font-medium transition-colors">How It Works</a>
-              <a href="#faq" className="text-neutral-700 hover:text-primary-600 font-medium transition-colors">FAQ</a>
-              <Link 
-                to="/login" 
-                className="btn-primary text-sm"
-              >
-                Get Started Free →
-              </Link>
-            </div>
-          </div>
-        </div>
-      </nav>
+      {/* Shared Navigation */}
+      <SharedNav />
 
       {/* Hero Section - Modern & Professional */}
       <section className="pt-32 pb-20 px-4 overflow-hidden">
@@ -288,7 +411,8 @@ export default function LandingPage() {
             {features.map((feature, index) => (
               <div 
                 key={index}
-                className="group relative bg-gradient-to-br from-white to-neutral-50 p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-300 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2"
+                onClick={() => setSelectedFeature(selectedFeature === index ? null : index)}
+                className="group relative bg-gradient-to-br from-white to-neutral-50 p-8 rounded-2xl border-2 border-neutral-100 hover:border-primary-300 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 cursor-pointer"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 {/* Icon Container */}
@@ -301,9 +425,34 @@ export default function LandingPage() {
                 <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-primary-700 transition-colors">
                   {feature.title}
                 </h3>
-                <p className="text-neutral-600 leading-relaxed">
+                <p className="text-neutral-600 leading-relaxed mb-4">
                   {feature.description}
                 </p>
+                
+                {/* Click indicator */}
+                <div className="flex items-center text-primary-600 text-sm font-semibold group-hover:text-primary-700">
+                  <span>Click for details</span>
+                  <svg className={`w-4 h-4 ml-2 transform transition-transform ${selectedFeature === index ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </div>
+                
+                {/* Expanded Details */}
+                {selectedFeature === index && (
+                  <div className="mt-6 pt-6 border-t border-neutral-200 animate-slide-down">
+                    <h4 className="font-bold text-navy mb-3 text-sm uppercase tracking-wide">Key Features:</h4>
+                    <ul className="space-y-2">
+                      {feature.details.map((detail, i) => (
+                        <li key={i} className="flex items-start text-sm">
+                          <svg className="w-4 h-4 mr-2 text-success-500 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                          </svg>
+                          <span className="text-neutral-700">{detail}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
                 
                 {/* Decorative gradient on hover */}
                 <div className="absolute inset-0 bg-gradient-to-br from-primary-500/5 to-accent-500/5 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity -z-10"></div>
@@ -354,6 +503,157 @@ export default function LandingPage() {
                 )}
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Statistics Section - Modern Counter */}
+      <section className="py-20 bg-gradient-to-br from-primary-600 via-primary-700 to-primary-800">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="text-5xl mb-3 transform group-hover:scale-110 transition-transform">
+                  {stat.icon}
+                </div>
+                <div className="text-4xl font-bold text-white mb-2">
+                  {stat.number}
+                </div>
+                <div className="text-white/80 font-medium">
+                  {stat.label}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section - Social Proof */}
+      <section className="py-24 bg-gradient-to-br from-neutral-50 to-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="text-primary-600 font-semibold text-sm uppercase tracking-wider">TESTIMONIALS</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-navy mt-4 mb-6">
+              Loved by Thousands of Users
+            </h2>
+            <p className="text-xl text-neutral-600">
+              See what our community has to say
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {testimonials.map((testimonial, index) => (
+              <div 
+                key={index}
+                className="bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border-2 border-neutral-100 hover:border-primary-300 group"
+              >
+                {/* Rating Stars */}
+                <div className="flex mb-4">
+                  {[...Array(testimonial.rating)].map((_, i) => (
+                    <svg key={i} className="w-5 h-5 text-accent-500" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                
+                {/* Testimonial Text */}
+                <p className="text-neutral-700 leading-relaxed mb-6 italic">
+                  "{testimonial.text}"
+                </p>
+                
+                {/* Author */}
+                <div className="flex items-center border-t border-neutral-100 pt-6">
+                  <div className="text-4xl mr-4">{testimonial.image}</div>
+                  <div>
+                    <div className="font-bold text-navy">{testimonial.name}</div>
+                    <div className="text-sm text-neutral-500">{testimonial.role}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section - Modern Cards */}
+      <section id="pricing" className="py-24 bg-white">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-16">
+            <span className="text-primary-600 font-semibold text-sm uppercase tracking-wider">PRICING</span>
+            <h2 className="text-4xl md:text-5xl font-bold text-navy mt-4 mb-6">
+              Choose Your Perfect Plan
+            </h2>
+            <p className="text-xl text-neutral-600">
+              Start free, upgrade when you need more
+            </p>
+          </div>
+          
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {pricingPlans.map((plan, index) => (
+              <div 
+                key={index}
+                className={`relative rounded-3xl p-8 transition-all duration-300 ${
+                  plan.popular
+                    ? 'bg-gradient-to-br from-primary-600 to-primary-800 text-white shadow-2xl scale-105 border-4 border-accent-400'
+                    : 'bg-gradient-to-br from-white to-neutral-50 border-2 border-neutral-200 hover:border-primary-300 hover:shadow-xl'
+                }`}
+              >
+                {plan.popular && (
+                  <div className="absolute -top-5 left-1/2 transform -translate-x-1/2">
+                    <span className="bg-gradient-to-r from-accent-500 to-accent-600 text-white px-6 py-2 rounded-full text-sm font-bold shadow-lg">
+                      ⭐ MOST POPULAR
+                    </span>
+                  </div>
+                )}
+                
+                <div className="text-center mb-8">
+                  <h3 className={`text-2xl font-bold mb-2 ${plan.popular ? 'text-white' : 'text-navy'}`}>
+                    {plan.name}
+                  </h3>
+                  <div className="flex items-baseline justify-center mb-2">
+                    <span className={`text-5xl font-extrabold ${plan.popular ? 'text-white' : 'text-primary-700'}`}>
+                      {plan.price}
+                    </span>
+                    <span className={`ml-2 ${plan.popular ? 'text-white/80' : 'text-neutral-500'}`}>
+                      /{plan.period}
+                    </span>
+                  </div>
+                  <p className={`text-sm ${plan.popular ? 'text-white/80' : 'text-neutral-600'}`}>
+                    {plan.description}
+                  </p>
+                </div>
+                
+                <ul className="space-y-4 mb-8">
+                  {plan.features.map((feature, i) => (
+                    <li key={i} className="flex items-start">
+                      <svg className={`w-5 h-5 mr-3 flex-shrink-0 mt-0.5 ${plan.popular ? 'text-success-400' : 'text-success-500'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                      </svg>
+                      <span className={`text-sm ${plan.popular ? 'text-white' : 'text-neutral-700'}`}>
+                        {feature}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+                
+                <Link
+                  to="/login"
+                  className={`block w-full py-4 px-6 rounded-xl text-center font-bold transition-all transform hover:scale-105 ${
+                    plan.popular
+                      ? 'bg-white text-primary-700 hover:bg-accent-500 hover:text-white shadow-xl'
+                      : 'bg-gradient-to-r from-primary-600 to-primary-700 text-white hover:from-primary-700 hover:to-primary-800 shadow-lg'
+                  }`}
+                >
+                  {plan.cta}
+                </Link>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-12">
+            <p className="text-neutral-600">
+              All plans include 14-day free trial • No credit card required • Cancel anytime
+            </p>
           </div>
         </div>
       </section>
@@ -460,87 +760,8 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Footer - Modern & Clean */}
-      <footer className="bg-navy text-white py-16 px-4">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            {/* Brand */}
-            <div>
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="bg-gradient-to-br from-primary-400 to-primary-600 p-2 rounded-xl">
-                  <span className="text-2xl">💰</span>
-                </div>
-                <span className="text-xl font-bold">TrackExpense</span>
-              </div>
-              <p className="text-neutral-300 text-sm leading-relaxed">
-                Your intelligent financial companion for smarter money management and better financial decisions.
-              </p>
-            </div>
-            
-            {/* Product */}
-            <div>
-              <h4 className="font-bold mb-4 text-lg">Product</h4>
-              <ul className="space-y-3 text-neutral-300 text-sm">
-                <li><a href="#features" className="hover:text-accent-400 transition-colors inline-flex items-center group">
-                  Features
-                  <svg className="w-4 h-4 ml-1 opacity-0 group-hover:opacity-100 transform group-hover:translate-x-1 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </a></li>
-                <li><a href="#how-it-works" className="hover:text-accent-400 transition-colors">How It Works</a></li>
-                <li><a href="#faq" className="hover:text-accent-400 transition-colors">Pricing</a></li>
-                <li><a href="#" className="hover:text-accent-400 transition-colors">Updates</a></li>
-              </ul>
-            </div>
-            
-            {/* Company */}
-            <div>
-              <h4 className="font-bold mb-4 text-lg">Company</h4>
-              <ul className="space-y-3 text-neutral-300 text-sm">
-                <li><a href="#" className="hover:text-accent-400 transition-colors">About Us</a></li>
-                <li><a href="#" className="hover:text-accent-400 transition-colors">Blog</a></li>
-                <li><a href="#" className="hover:text-accent-400 transition-colors">Careers</a></li>
-                <li><a href="#" className="hover:text-accent-400 transition-colors">Press Kit</a></li>
-              </ul>
-            </div>
-            
-            {/* Support */}
-            <div>
-              <h4 className="font-bold mb-4 text-lg">Support</h4>
-              <ul className="space-y-3 text-neutral-300 text-sm">
-                <li><a href="#faq" className="hover:text-accent-400 transition-colors">FAQ</a></li>
-                <li><a href="#" className="hover:text-accent-400 transition-colors">Contact</a></li>
-                <li><a href="#" className="hover:text-accent-400 transition-colors">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-accent-400 transition-colors">Terms of Service</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          {/* Bottom Bar */}
-          <div className="border-t border-neutral-700 pt-8 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
-            <p className="text-neutral-400 text-sm">
-              &copy; 2025 TrackExpense. All rights reserved.
-            </p>
-            <div className="flex items-center space-x-6">
-              <a href="#" className="text-neutral-400 hover:text-accent-400 transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-neutral-400 hover:text-accent-400 transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-              </a>
-              <a href="#" className="text-neutral-400 hover:text-accent-400 transition-colors">
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
-        </div>
-      </footer>
+      {/* Shared Footer */}
+      <SharedFooter />
     </div>
   )
 }
