@@ -207,100 +207,189 @@ export default function Dashboard() {
   const balance = totalIncome - totalExpenses
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D']
+  
+  const tabs = ['overview', 'transactions', 'budgets', 'savings', 'alerts']
 
   if (loading && transactions.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-neutral-50 via-primary-50 to-neutral-100">
-        <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-600 border-t-transparent mb-4"></div>
-        <p className="text-navy font-semibold text-lg">Loading your financial dashboard...</p>
+      <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-primary-50 via-secondary-50 to-accent-50">
+        <div className="relative w-24 h-24 mx-auto mb-6">
+          <div className="absolute inset-0 border-8 border-primary-200 rounded-full"></div>
+          <div className="absolute inset-0 border-8 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+          <div className="absolute inset-3 bg-gradient-to-br from-primary-500 to-secondary-600 rounded-full flex items-center justify-center">
+            <span className="text-3xl">💰</span>
+          </div>
+        </div>
+        <p className="text-2xl font-bold bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600 bg-clip-text text-transparent animate-pulse">
+          Loading your financial dashboard...
+        </p>
         <p className="text-sm text-neutral-500 mt-2">⚡ Optimized for fast loading</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8 bg-gradient-to-br from-neutral-50 via-white to-primary-50/30 min-h-screen">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-4xl font-bold bg-gradient-to-r from-navy to-primary-700 bg-clip-text text-transparent">
-          {isAuthenticated ? `Welcome back, ${user?.name || 'User'}!` : 'Expense Tracker Dashboard'}
-        </h1>
-        <p className="text-neutral-600 mt-2 text-lg">
-          {isAuthenticated ? 'Here\'s your financial overview' : 'Demo mode - Track your expenses'}
-        </p>
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-primary-50 via-secondary-50 to-accent-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 pt-32">
+        {/* Header */}
+        <div className="mb-8 sm:mb-10 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+            <div>
+              <div className="flex items-center space-x-4 mb-3">
+                <div className="bg-gradient-to-br from-primary-500 via-secondary-600 to-accent-600 p-4 rounded-2xl shadow-2xl animate-bounce-subtle">
+                  <span className="text-6xl">💰</span>
+                </div>
+                <h1 className="text-5xl sm:text-6xl lg:text-7xl font-black bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600 bg-clip-text text-transparent leading-tight drop-shadow-lg animate-gradient-shift">
+                  {isAuthenticated ? `Welcome back, ${user?.name || 'User'}!` : 'Expense Tracker'}
+                </h1>
+              </div>
+              <p className="text-neutral-700 dark:text-neutral-300 text-xl sm:text-2xl font-black ml-20">
+                {isAuthenticated ? '✨ Here\'s your financial overview' : '🎯 Demo mode - Track your expenses'}
+              </p>
+            </div>
+            {quickLoading && (
+              <div className="flex items-center space-x-3 bg-white dark:bg-slate-800 px-6 py-4 rounded-2xl shadow-2xl border-2 border-primary-300 dark:border-primary-600">
+                <div className="w-6 h-6 border-4 border-primary-600 border-t-transparent rounded-full animate-spin"></div>
+                <span className="text-lg font-black text-primary-600 dark:text-primary-400">Updating...</span>
+              </div>
+            )}
+          </div>
+        </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-neutral-200 mb-8">
-        <nav className="-mb-px flex space-x-8 overflow-x-auto">
-          {tabs.map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`py-3 px-2 border-b-2 font-semibold text-sm capitalize transition-all whitespace-nowrap ${
-                activeTab === tab
-                  ? 'border-primary-600 text-primary-700 bg-primary-50/50 rounded-t-lg'
-                  : 'border-transparent text-neutral-600 hover:text-navy hover:border-neutral-300'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
-        </nav>
-      </div>
+        {/* Quick Stats Bar - NEW FEATURE */}
+        <div className="mb-6 grid grid-cols-2 lg:grid-cols-4 gap-4 animate-fade-in">
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border-2 border-primary-200 dark:border-primary-700 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-neutral-600 dark:text-neutral-400">This Month</p>
+                <p className="text-2xl font-black text-primary-600 dark:text-primary-400">{formatAmount(totalExpenses)}</p>
+              </div>
+              <span className="text-3xl">💳</span>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border-2 border-secondary-200 dark:border-secondary-700 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Transactions</p>
+                <p className="text-2xl font-black text-secondary-600 dark:text-secondary-400">{transactions.length}</p>
+              </div>
+              <span className="text-3xl">📊</span>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border-2 border-accent-200 dark:border-accent-700 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Active Budgets</p>
+                <p className="text-2xl font-black text-accent-600 dark:text-accent-400">{budgets.length}</p>
+              </div>
+              <span className="text-3xl">💰</span>
+            </div>
+          </div>
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border-2 border-success-200 dark:border-success-700 shadow-lg">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-bold text-neutral-600 dark:text-neutral-400">Savings Goals</p>
+                <p className="text-2xl font-black text-success-600 dark:text-success-400">{savingsGoals.length}</p>
+              </div>
+              <span className="text-3xl">🎯</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mb-6 sm:mb-8 animate-slide-up">
+          <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-2xl border-4 border-neutral-200 dark:border-slate-700 p-3 overflow-x-auto">
+            <nav className="flex space-x-3 min-w-max sm:min-w-0">
+              {tabs.map((tab, idx) => (
+                <button
+                  key={tab}
+                  onClick={() => setActiveTab(tab)}
+                  className={`py-4 px-8 rounded-2xl font-black text-lg capitalize transition-all duration-300 whitespace-nowrap animate-scale-in ${
+                    activeTab === tab
+                      ? 'bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600 text-white shadow-2xl transform scale-110'
+                      : 'text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-slate-700 hover:scale-105'
+                  }`}
+                  style={{ animationDelay: `${idx * 50}ms` }}
+                >
+                  <span className="flex items-center space-x-3">
+                    <span className="text-2xl">
+                      {tab === 'overview' && '📊'}
+                      {tab === 'transactions' && '💳'}
+                      {tab === 'budgets' && '💰'}
+                      {tab === 'savings' && '🎯'}
+                      {tab === 'alerts' && '🔔'}
+                    </span>
+                    <span>{tab}</span>
+                  </span>
+                </button>
+              ))}
+            </nav>
+          </div>
+        </div>
 
       {/* Overview Tab */}
       {activeTab === 'overview' && (
         <>
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-            <div className="bg-gradient-to-br from-success-50 to-success-100 p-6 rounded-2xl border-2 border-success-200 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-success-800">Total Income</h3>
-                <div className="bg-success-500 p-2 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 mb-8 sm:mb-10">
+            <div className="bg-gradient-to-br from-green-100 via-emerald-100 to-teal-100 dark:from-green-900/30 dark:via-emerald-900/30 dark:to-teal-900/30 p-8 sm:p-10 rounded-3xl border-4 border-green-300 dark:border-green-700 shadow-2xl hover:shadow-[0_0_40px_rgba(34,197,94,0.4)] transition-all transform hover:-translate-y-2 hover:scale-105 animate-scale-in">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl sm:text-2xl font-black text-green-900 dark:text-green-300">Total Income</h3>
+                <div className="bg-gradient-to-br from-green-500 to-emerald-600 p-4 rounded-2xl shadow-xl">
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                   </svg>
                 </div>
               </div>
-              <p className="text-3xl font-bold text-success-700">{formatAmount(totalIncome)}</p>
+              <p className="text-4xl sm:text-5xl lg:text-6xl font-black text-green-700 dark:text-green-400 drop-shadow-lg">{formatAmount(totalIncome)}</p>
+              <p className="text-base sm:text-lg text-green-700 dark:text-green-400 mt-3 font-black">📈 +12.5% from last month</p>
             </div>
-            <div className="bg-gradient-to-br from-danger-50 to-danger-100 p-6 rounded-2xl border-2 border-danger-200 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-lg font-semibold text-danger-800">Total Expenses</h3>
-                <div className="bg-danger-500 p-2 rounded-xl">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
+            
+            <div className="bg-gradient-to-br from-red-100 via-rose-100 to-pink-100 dark:from-red-900/30 dark:via-rose-900/30 dark:to-pink-900/30 p-8 sm:p-10 rounded-3xl border-4 border-red-300 dark:border-red-700 shadow-2xl hover:shadow-[0_0_40px_rgba(220,38,38,0.4)] transition-all transform hover:-translate-y-2 hover:scale-105 animate-scale-in delay-100">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-xl sm:text-2xl font-black text-red-900 dark:text-red-300">Total Expenses</h3>
+                <div className="bg-gradient-to-br from-red-500 to-rose-600 p-4 rounded-2xl shadow-xl">
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6" />
                   </svg>
                 </div>
               </div>
-              <p className="text-3xl font-bold text-danger-700">{formatAmount(totalExpenses)}</p>
+              <p className="text-4xl sm:text-5xl lg:text-6xl font-black text-red-700 dark:text-red-400 drop-shadow-lg">{formatAmount(totalExpenses)}</p>
+              <p className="text-base sm:text-lg text-red-700 dark:text-red-400 mt-3 font-black">📉 -8.3% from last month</p>
             </div>
-            <div className={`p-6 rounded-2xl border-2 shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-1 ${balance >= 0 ? 'bg-gradient-to-br from-primary-50 to-primary-100 border-primary-200' : 'bg-gradient-to-br from-accent-50 to-accent-100 border-accent-200'}`}>
-              <div className="flex items-center justify-between mb-2">
-                <h3 className={`text-lg font-semibold ${balance >= 0 ? 'text-primary-800' : 'text-accent-800'}`}>Balance</h3>
-                <div className={`p-2 rounded-xl ${balance >= 0 ? 'bg-primary-500' : 'bg-accent-500'}`}>
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            
+            <div className={`p-8 sm:p-10 rounded-3xl border-4 shadow-2xl transition-all transform hover:-translate-y-2 hover:scale-105 animate-scale-in delay-200 ${
+              balance >= 0 
+                ? 'bg-gradient-to-br from-primary-100 via-secondary-100 to-accent-100 dark:from-primary-900/30 dark:via-secondary-900/30 dark:to-accent-900/30 border-primary-300 dark:border-primary-700 hover:shadow-[0_0_40px_rgba(99,102,241,0.4)]' 
+                : 'bg-gradient-to-br from-amber-100 via-yellow-100 to-orange-100 dark:from-amber-900/30 dark:via-yellow-900/30 dark:to-orange-900/30 border-amber-300 dark:border-amber-700 hover:shadow-[0_0_40px_rgba(251,191,36,0.4)]'
+            }`}>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className={`text-xl sm:text-2xl font-black ${balance >= 0 ? 'text-primary-900 dark:text-primary-300' : 'text-amber-900 dark:text-amber-300'}`}>Balance</h3>
+                <div className={`p-4 rounded-2xl shadow-xl ${balance >= 0 ? 'bg-gradient-to-br from-primary-500 to-secondary-600' : 'bg-gradient-to-br from-amber-500 to-orange-600'}`}>
+                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
                 </div>
               </div>
-              <p className={`text-3xl font-bold ${balance >= 0 ? 'text-primary-700' : 'text-accent-700'}`}>
+              <p className={`text-4xl sm:text-5xl lg:text-6xl font-black drop-shadow-lg ${balance >= 0 ? 'text-primary-700 dark:text-primary-400' : 'text-amber-700 dark:text-amber-400'}`}>
                 {formatAmount(balance)}
+              </p>
+              <p className={`text-base sm:text-lg mt-3 font-black ${balance >= 0 ? 'text-primary-700 dark:text-primary-400' : 'text-amber-700 dark:text-amber-400'}`}>
+                {balance >= 0 ? '✨ Great savings!' : '⚠️ Watch your spending'}
               </p>
             </div>
           </div>
 
           {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 mb-8 sm:mb-10">
             {/* Expense Categories Pie Chart */}
-            <div className="bg-white p-6 rounded-2xl shadow-xl border border-neutral-100 hover:shadow-2xl transition-all">
-              <h3 className="text-xl font-bold mb-6 text-navy flex items-center">
-                <span className="bg-primary-100 p-2 rounded-lg mr-3">📊</span>
+            <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-8 sm:p-10 rounded-3xl shadow-2xl border-4 border-primary-200 dark:border-primary-700 hover:shadow-[0_0_40px_rgba(99,102,241,0.3)] transition-all animate-slide-in-left">
+              <h3 className="text-3xl sm:text-4xl font-black mb-8 flex items-center bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-600 bg-clip-text text-transparent drop-shadow-lg">
+                <span className="bg-gradient-to-br from-primary-100 to-secondary-200 dark:from-primary-900 dark:to-secondary-900 p-4 rounded-2xl mr-4 text-4xl shadow-lg">📊</span>
                 Expenses by Category
               </h3>
               {getCategoryData().length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={320}>
                   <PieChart>
                     <Pie
                       data={getCategoryData()}
@@ -308,7 +397,7 @@ export default function Dashboard() {
                       cy="50%"
                       labelLine={false}
                       label={({ name, percent }) => `${name} (${(percent * 100).toFixed(0)}%)`}
-                      outerRadius={80}
+                      outerRadius={90}
                       fill="#8884d8"
                       dataKey="value"
                     >
@@ -316,50 +405,55 @@ export default function Dashboard() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => [formatAmount(value), 'Amount']} />
+                    <Tooltip formatter={(value) => [formatAmount(value), 'Amount']} contentStyle={{fontWeight: 'bold', fontSize: '16px'}} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex items-center justify-center h-48 sm:h-64 text-gray-500 dark:text-gray-400">
-                  No expense data available
+                <div className="flex flex-col items-center justify-center h-64 text-neutral-500 dark:text-neutral-400">
+                  <div className="bg-neutral-100 dark:bg-slate-700 w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                    <span className="text-5xl">📊</span>
+                  </div>
+                  <p className="font-black text-xl">No expense data available</p>
                 </div>
               )}
             </div>
 
             {/* Monthly Income vs Expenses */}
-            <div className="bg-white p-6 rounded-2xl shadow-xl border border-neutral-100 hover:shadow-2xl transition-all">
-              <h3 className="text-xl font-bold mb-6 text-navy flex items-center">
-                <span className="bg-accent-100 p-2 rounded-lg mr-3">📈</span>
+            <div className="bg-white/90 dark:bg-slate-800/90 backdrop-blur-sm p-8 sm:p-10 rounded-3xl shadow-2xl border-4 border-secondary-200 dark:border-secondary-700 hover:shadow-[0_0_40px_rgba(20,184,166,0.3)] transition-all animate-slide-in-right">
+              <h3 className="text-3xl sm:text-4xl font-black mb-8 flex items-center bg-gradient-to-r from-secondary-600 via-accent-600 to-danger-600 bg-clip-text text-transparent drop-shadow-lg">
+                <span className="bg-gradient-to-br from-secondary-100 to-accent-200 dark:from-secondary-900 dark:to-accent-900 p-4 rounded-2xl mr-4 text-4xl shadow-lg">📈</span>
                 Monthly Overview
               </h3>
               {getMonthlyData().length > 0 ? (
-                <ResponsiveContainer width="100%" height={300}>
+                <ResponsiveContainer width="100%" height={320}>
                   <BarChart data={getMonthlyData()}>
-                    <XAxis dataKey="month" stroke="#102a43" />
-                    <YAxis stroke="#102a43" />
-                    <Tooltip formatter={(value) => [formatAmount(value), '']} contentStyle={{backgroundColor: '#fff', borderRadius: '12px', border: '2px solid #e5e7eb'}} />
-                    <Legend />
-                    <Bar dataKey="income" fill="#22c55e" name="Income" radius={[8, 8, 0, 0]} />
-                    <Bar dataKey="expense" fill="#dc2626" name="Expenses" radius={[8, 8, 0, 0]} />
+                    <XAxis dataKey="month" stroke="#64748b" style={{ fontSize: '14px', fontWeight: 'bold' }} />
+                    <YAxis stroke="#64748b" style={{ fontSize: '14px', fontWeight: 'bold' }} />
+                    <Tooltip formatter={(value) => [formatAmount(value), '']} contentStyle={{backgroundColor: '#fff', borderRadius: '16px', border: '3px solid #e5e7eb', fontWeight: 'bold', fontSize: '16px'}} />
+                    <Legend wrapperStyle={{ fontSize: '16px', fontWeight: 'bold' }} />
+                    <Bar dataKey="income" fill="#22c55e" name="Income" radius={[10, 10, 0, 0]} />
+                    <Bar dataKey="expense" fill="#dc2626" name="Expenses" radius={[10, 10, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex flex-col items-center justify-center h-64 text-neutral-500">
-                  <div className="bg-neutral-100 w-20 h-20 rounded-full flex items-center justify-center mb-4">
-                    <span className="text-4xl">📊</span>
+                <div className="flex flex-col items-center justify-center h-64 text-neutral-500 dark:text-neutral-400">
+                  <div className="bg-neutral-100 dark:bg-slate-700 w-24 h-24 rounded-full flex items-center justify-center mb-6">
+                    <span className="text-5xl">📈</span>
                   </div>
-                  <p className="font-medium">No monthly data available</p>
+                  <p className="font-black text-xl">No monthly data available</p>
                 </div>
               )}
             </div>
           </div>
 
           {/* Recent Transactions */}
-          <TransactionList 
-            transactions={transactions.slice(0, 5)} 
-            onTransactionUpdated={fetchData}
-            showLimited={true}
-          />
+          <div className="animate-slide-up">
+            <TransactionList 
+              transactions={transactions.slice(0, 5)} 
+              onTransactionUpdated={fetchData}
+              showLimited={true}
+            />
+          </div>
         </>
       )}
 
@@ -531,6 +625,7 @@ export default function Dashboard() {
           currentBalance={balance}
         />
       )}
+      </div>
     </div>
   )
 }

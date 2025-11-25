@@ -94,31 +94,56 @@ async function startServer() {
     // Create Express app
     const app = express();
     
-    // Enhanced CORS configuration
+    // Enhanced CORS configuration with origin function
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'https://jade-zabaione-6618eb.netlify.app',
+      'https://animated-tulumba-6ec4e6.netlify.app',
+      'https://peppy-sprite-12003f.netlify.app',
+      'https://arsh-code-ux-track-expense.netlify.app',
+      'https://track-expenses-079.netlify.app',
+      'https://web-production-296b2.up.railway.app',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean);
+
     const corsOptions = {
-      origin: [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:3002',
-        'http://localhost:3003',
-        'https://jade-zabaione-6618eb.netlify.app',  // Your Netlify URL
-        'https://animated-tulumba-6ec4e6.netlify.app',  // Previous Netlify URL
-        'https://peppy-sprite-12003f.netlify.app',  // Current Netlify URL
-        'https://arsh-code-ux-track-expense.netlify.app',  // Updated Netlify URL
-        'https://track-expenses-079.netlify.app',  // Latest Netlify URL
-        'https://web-production-296b2.up.railway.app',  // Railway backend (self-reference for CORS preflight)
-        process.env.FRONTEND_URL,
-        /\.netlify\.app$/,  // Allow all netlify domains
-        /\.vercel\.app$/,   // Allow all vercel domains
-        /\.railway\.app$/,  // Allow all railway domains
-        'https://netlify.app'
-      ].filter(Boolean),
+      origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or Postman)
+        if (!origin) return callback(null, true);
+        
+        // Check if the origin is in allowed list
+        if (allowedOrigins.indexOf(origin) !== -1) {
+          return callback(null, true);
+        }
+        
+        // Check if origin matches patterns
+        if (origin.match(/\.netlify\.app$/) || 
+            origin.match(/\.vercel\.app$/) || 
+            origin.match(/\.railway\.app$/)) {
+          return callback(null, true);
+        }
+        
+        // Log rejected origin for debugging
+        log.warn(`CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      },
       credentials: true,
-      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-      allowedHeaders: ['Content-Type', 'Authorization'],
+      methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+      allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+      exposedHeaders: ['Content-Range', 'X-Content-Range'],
+      maxAge: 86400, // 24 hours
+      preflightContinue: false,
+      optionsSuccessStatus: 204
     };
     
+    // Apply CORS before any routes
     app.use(cors(corsOptions));
+    
+    // Explicit OPTIONS handler for all routes
+    app.options('*', cors(corsOptions));
     app.use(express.json({ limit: '10mb' }));
     app.use(express.urlencoded({ extended: true, limit: '10mb' }));
     
