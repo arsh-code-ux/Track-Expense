@@ -105,9 +105,12 @@ async function startServer() {
         'https://animated-tulumba-6ec4e6.netlify.app',  // Previous Netlify URL
         'https://peppy-sprite-12003f.netlify.app',  // Current Netlify URL
         'https://arsh-code-ux-track-expense.netlify.app',  // Updated Netlify URL
+        'https://track-expenses-079.netlify.app',  // Latest Netlify URL
+        'https://web-production-296b2.up.railway.app',  // Railway backend (self-reference for CORS preflight)
         process.env.FRONTEND_URL,
         /\.netlify\.app$/,  // Allow all netlify domains
         /\.vercel\.app$/,   // Allow all vercel domains
+        /\.railway\.app$/,  // Allow all railway domains
         'https://netlify.app'
       ].filter(Boolean),
       credentials: true,
@@ -200,26 +203,28 @@ async function startServer() {
       process.exit(1);
     });
     
-    // Graceful shutdown
-    const gracefulShutdown = (signal) => {
+    // Graceful shutdown (modern mongoose: .close() returns a Promise)
+    const gracefulShutdown = async (signal) => {
       log.info(`Received ${signal}. Starting graceful shutdown...`);
-      
-      server.close((err) => {
-        if (err) {
-          log.error(`Error during server shutdown: ${err.message}`);
-          process.exit(1);
-        }
-        
-        mongoose.connection.close((err) => {
-          if (err) {
-            log.error(`Error closing database connection: ${err.message}`);
-            process.exit(1);
-          }
-          
-          log.success('✅ Graceful shutdown completed');
-          process.exit(0);
+
+      try {
+        // Stop accepting new connections
+        await new Promise((resolve, reject) => {
+          server.close((err) => {
+            if (err) return reject(err);
+            resolve();
+          });
         });
-      });
+
+        // Close mongoose connection (no callback in newer mongoose)
+        await mongoose.connection.close();
+
+        log.success('✅ Graceful shutdown completed');
+        process.exit(0);
+      } catch (err) {
+        log.error(`Error during graceful shutdown: ${err && err.message ? err.message : err}`);
+        process.exit(1);
+      }
     };
     
     process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
